@@ -3,12 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Shalom Church</title>
+
+<!-- FONT AWESOME -->
+
 <link rel="stylesheet"
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<!-- GOOGLE FONT -->
+
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
+
+/* RESET */
 
 *{
     margin:0;
@@ -26,90 +35,38 @@ body{
     color:white;
     overflow-x:hidden;
 }
-/* CAMPUSES */
 
-.campus-container{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(350px,1fr));
-    gap:35px;
-    margin-top:50px;
-}
-
-.campus-card{
-    background:rgba(255,255,255,0.05);
-    border:1px solid rgba(255,255,255,0.08);
-    padding:30px;
-    border-radius:25px;
-    text-align:center;
-    transition:0.4s;
-    backdrop-filter:blur(10px);
-}
-
-.campus-card:hover{
-    transform:translateY(-10px);
-    background:rgba(0,255,213,0.08);
-    box-shadow:0 15px 35px rgba(0,0,0,0.4);
-}
-
-.campus-card h3{
-    font-size:28px;
-    margin-bottom:15px;
-}
-
-.campus-card p{
-    color:#d0d0d0;
-    margin-bottom:10px;
-}
-.social-media a:last-child:hover{
-    background:#00e676;
-}
-
-/* CENTER MAP */
-
-.map-box{
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    margin-top:25px;
-    margin-bottom:25px;
-}
-
-.map-box iframe{
-    width:100%;
-    max-width:320px;
-
-    height:250px;
-    border:none;
-    border-radius:20px;
-}
 /* NAVBAR */
 
 nav{
     position:fixed;
-    width:100%;
     top:0;
     left:0;
+    width:100%;
+    padding:15px 60px;
     display:flex;
     justify-content:space-between;
     align-items:center;
-    padding:15px 60px;
     background:rgba(0,0,0,0.5);
     backdrop-filter:blur(12px);
+    border-bottom:1px solid rgba(255,255,255,0.08);
     z-index:1000;
-    border-bottom:1px solid rgba(255,255,255,0.1);
 }
 
 .logo img{
     width:170px;
 }
 
+.nav-links{
+    display:flex;
+    gap:25px;
+}
+
 .nav-links a{
     color:white;
     text-decoration:none;
-    margin-left:25px;
     font-weight:500;
     position:relative;
-    transition:0.3s;
 }
 
 .nav-links a::after{
@@ -146,31 +103,32 @@ nav{
 }
 
 .hero-content{
-    max-width:800px;
+    max-width:850px;
     animation:fadeUp 1.5s ease;
 }
 
 .hero h1{
-    font-size:65px;
-    font-weight:700;
+    font-size:68px;
     line-height:1.2;
+    margin-bottom:20px;
 }
 
 .hero p{
-    margin-top:20px;
     font-size:22px;
-    color:#d9d9d9;
+    color:#d0d0d0;
 }
+
+/* BUTTON */
 
 .btn{
     display:inline-block;
     margin-top:30px;
     padding:14px 35px;
+    border-radius:40px;
     background:linear-gradient(45deg,#00ffd5,#00bfa5);
     color:black;
     text-decoration:none;
     font-weight:600;
-    border-radius:40px;
     transition:0.4s;
 }
 
@@ -199,95 +157,112 @@ nav{
     color:#bdbdbd;
 }
 
+/* LIVE */
+
+.live-box{
+    width:100%;
+    display:flex;
+    justify-content:center;
+    background:rgba(255,255,255,0.03);
+    padding:20px;
+    border-radius:30px;
+}
+
+.live-box iframe{
+    width:100%;
+    max-width:1000px;
+    height:550px;
+    border:none;
+    border-radius:25px;
+}
+
+/* PRAYER */
+
+.prayer-box{
+    max-width:850px;
+    margin:auto;
+    text-align:center;
+    background:rgba(255,255,255,0.05);
+    padding:60px 30px;
+    border-radius:30px;
+}
+
+.prayer-box h2{
+    font-size:40px;
+    margin-bottom:20px;
+}
+
+.prayer-box p{
+    color:#d0d0d0;
+    line-height:1.8;
+}
+
 /* ABOUT */
 
 .about{
     display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+    grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
     gap:50px;
     align-items:center;
 }
 
 .about img{
     width:100%;
-    border-radius:20px;
+    border-radius:25px;
 }
 
 .about-text h3{
-    font-size:32px;
+    font-size:35px;
     margin-bottom:20px;
 }
 
 .about-text p{
-    line-height:1.9;
     color:#d0d0d0;
+    line-height:1.9;
 }
 
-/* CARDS */
+/* MINISTRY */
 
 .cards{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
     gap:30px;
 }
-.know-more{
-    display:inline-block;
-    margin-top:18px;
-    color:#00ffd5;
-    font-weight:600;
-    transition:0.3s;
-}
 
-.card:hover .know-more{
-    transform:translateX(8px);
-}
-.card{
-    background:rgba(255,255,255,0.05);
-    padding:35px;
-    border-radius:20px;
-    transition:0.4s;
-    border:1px solid rgba(255,255,255,0.08);
-text-decoration:none;
-    color:white;
-    cursor:pointer;
-}
-
-.card:hover{
-    transform:translateY(-10px);
-    background:rgba(0,255,213,0.08);
-    box-shadow:0 15px 35px rgba(0,0,0,0.4);
-}
 .card-link{
     text-decoration:none;
     color:white;
 }
 
-.know-more{
-    display:inline-block;
-    margin-top:18px;
-    color:#00ffd5;
-    font-weight:600;
-    transition:0.3s;
-}
-
-.card:hover .know-more{
-    transform:translateX(8px);
-}
-
 .card{
-    cursor:pointer;
+    background:rgba(255,255,255,0.05);
+    padding:35px;
+    border-radius:25px;
+    border:1px solid rgba(255,255,255,0.08);
+    transition:0.4s;
 }
+
+.card:hover{
+    transform:translateY(-10px);
+    background:rgba(0,255,213,0.08);
+}
+
 .card h3{
     margin-bottom:15px;
     font-size:24px;
 }
 
-/* GALLERY SLIDER */
+.know-more{
+    display:inline-block;
+    margin-top:20px;
+    color:#00ffd5;
+    font-weight:600;
+}
+
+/* GALLERY */
 
 .gallery-slider{
-    width:100%;
     overflow:hidden;
-    position:relative;
     margin-top:40px;
 }
 
@@ -297,89 +272,31 @@ text-decoration:none;
     width:max-content;
     animation:scrollGallery 25s linear infinite;
 }
+
+.gallery-track:hover{
+    animation-play-state:paused;
+}
+
 .gallery-track img{
     width:420px;
     height:280px;
     object-fit:cover;
     border-radius:20px;
+    cursor:pointer;
     transition:0.4s;
-    flex-shrink:0;
-}
-.gallery-track img:hover{
-    transform:scale(1.06);
-}
-/* MOBILE */
-
-@media(max-width:768px){
-
-.gallery-track img{
-    width:300px;
-    height:220px;
 }
 
-}
 .gallery-track img:hover{
     transform:scale(1.05);
 }
 
-/* AUTO SLIDE */
-
 @keyframes scrollGallery{
-
     from{
         transform:translateX(0);
     }
-
     to{
         transform:translateX(-50%);
     }
-
-}/* SERVICE TIMES */
-
-.service-box{
-    text-align:center;
-    background:rgba(255,255,255,0.05);
-    padding:40px;
-    border-radius:20px;
-}
-
-/* FOOTER */
-
-footer{
-    background:#000;
-    text-align:center;
-    padding:40px 20px;
-    border-top:1px solid rgba(255,255,255,0.1);
-}
-
-footer p{
-    color:#aaa;
-}
-
-/* WHATSAPP */
-
-.whatsapp{
-    position:fixed;
-    bottom:25px;
-    right:25px;
-    width:60px;
-    height:60px;
-    background:#25D366;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    border-radius:50%;
-    text-decoration:none;
-    color:white;
-    font-size:28px;
-    box-shadow:0 10px 25px rgba(0,0,0,0.3);
-}
-/* CARD LINKS */
-
-.card-link{
-    text-decoration:none;
-    color:white;
-    display:block;
 }
 
 /* LIGHTBOX */
@@ -395,39 +312,89 @@ footer p{
     justify-content:center;
     align-items:center;
     z-index:9999;
-    padding:20px;
 }
 
 .lightbox img{
     max-width:90%;
     max-height:90%;
-    border-radius:20px;
-    animation:zoomIn 0.4s ease;
+    border-radius:25px;
 }
 
 .close-btn{
     position:absolute;
     top:30px;
     right:40px;
-    font-size:40px;
-    color:white;
+    font-size:45px;
     cursor:pointer;
 }
 
-@keyframes zoomIn{
+/* SERVICES */
 
-    from{
-        transform:scale(0.7);
-        opacity:0;
-    }
-
-    to{
-        transform:scale(1);
-        opacity:1;
-    }
-
+.service-container{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(350px,1fr));
+    gap:35px;
 }
-/* SOCIAL MEDIA */
+
+.service-card{
+    background:rgba(255,255,255,0.05);
+    padding:35px;
+    border-radius:25px;
+    transition:0.4s;
+}
+
+.service-card:hover{
+    transform:translateY(-10px);
+    background:rgba(0,255,213,0.05);
+}
+
+.service-card h2{
+    color:#00ffd5;
+    margin-bottom:25px;
+}
+
+.service-item{
+    margin-bottom:20px;
+    padding-bottom:15px;
+    border-bottom:1px solid rgba(255,255,255,0.08);
+}
+
+.service-item:last-child{
+    border-bottom:none;
+}
+
+/* CAMPUSES */
+
+.campus-container{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:35px;
+}
+
+.campus-card{
+    background:rgba(255,255,255,0.05);
+    padding:30px;
+    border-radius:25px;
+    text-align:center;
+    transition:0.4s;
+}
+
+.campus-card:hover{
+    transform:translateY(-10px);
+}
+
+.map-box{
+    margin:25px 0;
+}
+
+.map-box iframe{
+    width:100%;
+    height:250px;
+    border:none;
+    border-radius:20px;
+}
+
+/* SOCIAL */
 
 .social-media{
     display:flex;
@@ -445,45 +412,50 @@ footer p{
     border-radius:50%;
     background:rgba(255,255,255,0.08);
     color:white;
-    font-size:24px;
     text-decoration:none;
+    font-size:24px;
     transition:0.4s;
 }
 
 .social-media a:hover{
-    transform:translateY(-8px) scale(1.1);
     background:#00ffd5;
     color:black;
-    box-shadow:0 10px 25px rgba(0,255,213,0.4);
-}
-/* PRAYER REQUEST */
-
-.prayer-section{
-    padding-top:40px;
+    transform:translateY(-8px);
 }
 
-.prayer-box{
-    max-width:800px;
-    margin:auto;
+/* FOOTER */
+
+footer{
+    background:#000;
+    padding:50px 20px;
     text-align:center;
-    background:rgba(255,255,255,0.05);
-    padding:60px 30px;
-    border-radius:30px;
-    border:1px solid rgba(255,255,255,0.08);
-    backdrop-filter:blur(10px);
+    border-top:1px solid rgba(255,255,255,0.08);
 }
 
-.prayer-box h2{
-    font-size:42px;
-    margin-bottom:20px;
+footer p{
+    color:#aaa;
+    margin-top:20px;
 }
 
-.prayer-box p{
-    color:#d0d0d0;
-    font-size:18px;
-    margin-bottom:30px;
-    line-height:1.7;
+/* WHATSAPP */
+
+.whatsapp{
+    position:fixed;
+    bottom:25px;
+    right:25px;
+    width:60px;
+    height:60px;
+    background:#25D366;
+    border-radius:50%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    color:white;
+    text-decoration:none;
+    font-size:28px;
+    z-index:1000;
 }
+
 /* ANIMATION */
 
 @keyframes fadeUp{
@@ -497,123 +469,6 @@ footer p{
         transform:translateY(0);
     }
 }
-/* SERVICE SECTION */
-
-.service-container{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(350px,1fr));
-    gap:35px;
-    margin-top:50px;
-}
-
-.service-card{
-    background:rgba(255,255,255,0.05);
-    border:1px solid rgba(255,255,255,0.08);
-    border-radius:25px;
-    padding:35px;
-    transition:0.4s;
-    backdrop-filter:blur(10px);
-}
-
-.service-card:hover{
-    transform:translateY(-10px);
-    background:rgba(0,255,213,0.06);
-    box-shadow:0 15px 40px rgba(0,0,0,0.35);
-}
-
-.service-card h2{
-    font-size:28px;
-    margin-bottom:25px;
-    color:#00ffd5;
-}
-
-.service-item{
-    margin-bottom:25px;
-    padding-bottom:20px;
-    border-bottom:1px solid rgba(255,255,255,0.08);
-}
-
-.service-item:last-child{
-    border-bottom:none;
-}
-
-.service-item h4{
-    font-size:18px;
-    margin-bottom:10px;
-    color:white;
-}
-
-.service-item p{
-    color:#d0d0d0;
-    line-height:1.8;
-    font-size:15px;
-}
-/* LIVE STREAM */
-
-.live-box{
-    width:100%;
-    display:flex;
-    justify-content:center;
-    margin-top:40px;
-}
-
-.live-box iframe{
-    width:100%;
-    max-width:1000px;
-    height:550px;
-    border:none;
-    border-radius:25px;
-    box-shadow:0 15px 40px rgba(0,0,0,0.4);
-}
-/* CAMPUS GRID */
-
-.campus-container{
-    display:grid;
-    grid-template-columns:repeat(2,1fr);
-    gap:35px;
-    margin-top:50px;
-}
-
-/* CAMPUS CARD */
-
-.campus-card{
-    display:flex;
-    flex-direction:column;
-    justify-content:space-between;
-}
-
-.campus-card:hover{
-    transform:translateY(-10px);
-    background:rgba(0,255,213,0.08);
-    box-shadow:0 15px 35px rgba(0,0,0,0.4);
-}
-
-.campus-card h3{
-    font-size:28px;
-    margin-bottom:15px;
-}
-
-.campus-card p{
-    color:#d0d0d0;
-    margin-bottom:15px;
-    line-height:1.7;
-}
-
-/* MAP */
-
-.map-box{
-    display:flex;
-    justify-content:center;
-    margin-top:20px;
-    margin-bottom:25px;
-}
-
-.map-box iframe{
-    width:100%;
-    height:250px;
-    border:none;
-    border-radius:20px;
-}
 
 /* MOBILE */
 
@@ -625,31 +480,35 @@ footer p{
 
 }
 
-
-/* MOBILE */
-
 @media(max-width:768px){
 
-    nav{
-        padding:15px 20px;
-        flex-direction:column;
-    }
+nav{
+    padding:15px 20px;
+    flex-direction:column;
+}
 
-    .nav-links{
-        margin-top:10px;
-    }
+.nav-links{
+    margin-top:12px;
+    flex-wrap:wrap;
+    justify-content:center;
+}
 
-    .hero h1{
-        font-size:40px;
-    }
+.hero h1{
+    font-size:42px;
+}
 
-    .hero p{
-        font-size:18px;
-    }
+.hero p{
+    font-size:18px;
+}
 
-    .section-title h2{
-        font-size:32px;
-    }
+.gallery-track img{
+    width:300px;
+    height:220px;
+}
+
+.live-box iframe{
+    height:250px;
+}
 
 }
 
@@ -662,228 +521,190 @@ footer p{
 
 <nav>
 
-    <div class="logo">
-        <img src="logo.png">
-    </div>
+<div class="logo">
+<img src="logo.png">
+</div>
 
- 
+<div class="nav-links">
+<a href="#live">Live</a>
+<a href="#about">About</a>
+<a href="#ministries">Ministries</a>
+<a href="#gallery">Gallery</a>
+<a href="#services">Services</a>
+<a href="#campuses">Campuses</a>
+</div>
 
 </nav>
 
 <!-- HERO -->
+
 <section class="hero">
 
-<div class="hero-overlay">
+<div class="hero-content">
 
-    <div class="hero-content">
+<h1>Welcome To Shalom Church</h1>
 
-        <h1>Welcome To Shalom Church</h1>
+<p>
+Transforming Lives From Darkness To Light
+</p>
 
-        <p>
-            Transforming Lives From Darkness To Light
-        </p>
-
-        <a href="#live" class="btn">
-            ▶ Watch Live
-        </a>
-
-    </div>
+<a href="#live" class="btn">
+▶ Watch Live
+</a>
 
 </div>
 
 </section>
+
+<!-- LIVE -->
+
 <section class="section" id="live">
 
 <div class="section-title">
-    <h2>🔴 Live Worship</h2>
-    <p>Join Our Live Worship Service</p>
+<h2>🔴 Live Worship</h2>
+<p>Join Our Live Worship Service</p>
 </div>
 
 <div class="live-box">
 
-    <iframe
-    src="https://www.youtube.com/embed/live_stream?channel=YOUR_CHANNEL_ID"
-    allowfullscreen>
-    </iframe>
+<iframe
+src="https://www.youtube.com/embed/live_stream?channel=YOUR_CHANNEL_ID"
+allowfullscreen>
+</iframe>
 
 </div>
-<!-- PRAYER REQUEST -->
-
-<section class="section prayer-section">
-
-    <div class="prayer-box">
-
-        <h2>🙏 Have A Prayer Request?</h2>
-
-        <p>
-            Our prayer team is ready to stand with you in prayer.
-        </p>
-
-        <a 
-        href="https://wa.me/919400328000?text=Hi,%20I%20have%20a%20prayer%20request"
-        class="btn"
-        target="_blank">
-
-        💬 Send Prayer Request
-
-        </a>
-
-    </div>
 
 </section>
-</section>
-<!-- ABOUT -->
+
+<!-- PRAYER -->
 
 <section class="section">
 
-    <div class="section-title">
-        <h2>About Our Church</h2>
-        <p>Faith • Worship • Community</p>
-    </div>
+<div class="prayer-box">
 
-    <div class="about">
+<h2>🙏 Have A Prayer Request?</h2>
 
-        <img src="church.jpg">
+<p>
+Our prayer team is ready to stand with you in prayer.
+</p>
 
-        <div class="about-text">
+<a
+href="https://wa.me/919400328000?text=Hi,%20I%20have%20a%20prayer%20request"
+class="btn"
+target="_blank">
 
-            <h3>A Place Of Hope & Healing</h3>
+💬 Send Prayer Request
 
-            <p>
-              Shalom Center is place for your spiritual and faith development. We believe in the supernatural power of God in doing wonders and miracles in thousands of lives. Our Vision is Transforming Lives From Darkness To Light. Around 3000 people gather every sunday to worship God and to experience His power of goodness. If you're looking for a place to renew your spirit and soul with Joy, Power and Hope, You Belong Here!
-            </p>
+</a>
 
-        </div>
+</div>
 
-    </div>
+</section>
+
+<!-- ABOUT -->
+
+<section class="section" id="about">
+
+<div class="section-title">
+<h2>About Our Church</h2>
+<p>Faith • Worship • Community</p>
+</div>
+
+<div class="about">
+
+<img src="church.jpg">
+
+<div class="about-text">
+
+<h3>A Place Of Hope & Healing</h3>
+
+<p>
+Shalom Center is a place for spiritual growth, healing,
+prayer and worship. Thousands gather every Sunday to
+experience the supernatural power and goodness of God.
+</p>
+
+</div>
+
+</div>
 
 </section>
 
 <!-- MINISTRIES -->
 
-<section class="section">
+<section class="section" id="ministries">
 
-    <div class="section-title">
-        <h2>Our Ministries</h2>
-    </div>
+<div class="section-title">
+<h2>Our Ministries</h2>
+</div>
 
-    <div class="cards">
-<a 
-href="https://wa.me/919400328000?text=Hi,%20I%20would%20like%20to%20know%20more%20about%20Shalom%20Church"
-class="card-link"
-target="_blank">
+<div class="cards">
 
-    <div class="card">
-        <h3>⛪ Shalom Church</h3>
-        <p>Experience powerful worship every Sunday.</p>
-
-        <span class="know-more">
-            Know More →
-        </span>
-    </div>
-
+<a href="https://wa.me/919400328000" class="card-link">
+<div class="card">
+<h3>⛪ Shalom Church</h3>
+<p>Experience powerful worship every Sunday.</p>
+<span class="know-more">Know More →</span>
+</div>
 </a>
 
-<a 
-href="https://wa.me/919400328000?text=Hi,%20I%20would%20like%20to%20know%20more%20about%20Shalom%20Prayer%20Tower"
-class="card-link"
-target="_blank">
-
-    <div class="card">
-        <h3>🙏 Shalom Prayer Tower</h3>
-        <p>Personal prayer and Counseling.</p>
-
-        <span class="know-more">
-            Know More →
-        </span>
-    </div>
-
+<a href="https://wa.me/919400328000" class="card-link">
+<div class="card">
+<h3>🙏 Prayer Tower</h3>
+<p>Personal prayer and counseling.</p>
+<span class="know-more">Know More →</span>
+</div>
 </a>
 
-<a 
-href="https://wa.me/919400328000?text=Hi,%20I%20would%20like%20to%20know%20more%20about%20MANNA%20TV"
-class="card-link"
-target="_blank">
-
-    <div class="card">
-        <h3>📺 MANNA TV</h3>
-        <p>Complete Christian Channel.</p>
-
-        <span class="know-more">
-            Know More →
-        </span>
-    </div>
-
+<a href="https://wa.me/919400328000" class="card-link">
+<div class="card">
+<h3>📺 MANNA TV</h3>
+<p>Christian broadcasting ministry.</p>
+<span class="know-more">Know More →</span>
+</div>
 </a>
 
-<a 
-href="https://wa.me/919400328000?text=Hi,%20I%20would%20like%20to%20know%20more%20about%20the%20Healing%20Camp"
-class="card-link"
-target="_blank">
-
-    <div class="card">
-        <h3>✝️ Healing Camp</h3>
-        <p>Camp for the sick and those with other personal issues.</p>
-
-        <span class="know-more">
-            Know More →
-        </span>
-    </div>
-
-</a>
-<a 
-href="https://wa.me/919400328000?text=Hi,%20I%20would%20like%20to%20know%20more%20about%20Shalom%20Daily%20Manna"
-class="card-link"
-target="_blank">
-
-    <div class="card">
-        <h3>🍚 Daily Manna </h3>
-        <p>Special conventions for the sick and those under demonic bondage.</p>
-
-        <span class="know-more">
-            Know More →
-        </span>
-    </div>
-
+<a href="https://wa.me/919400328000" class="card-link">
+<div class="card">
+<h3>✝️ Healing Camp</h3>
+<p>Prayer and healing services.</p>
+<span class="know-more">Know More →</span>
+</div>
 </a>
 
-
-</a>
-    </div>
+</div>
 
 </section>
 
 <!-- GALLERY -->
 
-<section class="section">
+<section class="section" id="gallery">
 
 <div class="section-title">
-    <h2>Church Gallery</h2>
+<h2>Church Gallery</h2>
 </div>
 
 <div class="gallery-slider">
 
-    <div class="gallery-track">
+<div class="gallery-track">
 
-    <img src="1.jpg" onclick="openImage(this.src)">
-    <img src="2.jpg" onclick="openImage(this.src)">
-    <img src="3.jpg" onclick="openImage(this.src)">
-    <img src="4.jpg" onclick="openImage(this.src)">
-    <img src="5.jpg" onclick="openImage(this.src)">
+<img src="1.jpg" onclick="openImage(this.src)">
+<img src="2.jpg" onclick="openImage(this.src)">
+<img src="3.jpg" onclick="openImage(this.src)">
+<img src="4.jpg" onclick="openImage(this.src)">
+<img src="5.jpg" onclick="openImage(this.src)">
 
-    <!-- DUPLICATE -->
-
-    <img src="1.jpg" onclick="openImage(this.src)">
-    <img src="2.jpg" onclick="openImage(this.src)">
-    <img src="3.jpg" onclick="openImage(this.src)">
-    <img src="4.jpg" onclick="openImage(this.src)">
-    <img src="5.jpg" onclick="openImage(this.src)">
+<img src="1.jpg" onclick="openImage(this.src)">
+<img src="2.jpg" onclick="openImage(this.src)">
+<img src="3.jpg" onclick="openImage(this.src)">
+<img src="4.jpg" onclick="openImage(this.src)">
+<img src="5.jpg" onclick="openImage(this.src)">
 
 </div>
+
 </div>
 
 </section>
-
 <!-- SERVICE TIMES -->
 
 <section class="section" id="services">
@@ -903,17 +724,17 @@ target="_blank">
 
             <div class="service-item">
                 <h4>Sunday Worship Service 1</h4>
-                <p>🕖 Sunday • 07:00 AM – 09:00 AM</p>
+                <p> Sunday • 07:00 AM – 09:00 AM</p>
             </div>
 
             <div class="service-item">
                 <h4>Sunday Worship Service 2</h4>
-                <p>🕘 Sunday • 09:00 AM – 12:00 PM</p>
+                <p> Sunday • 09:00 AM – 12:00 PM</p>
             </div>
 
             <div class="service-item">
                 <h4>Healing Prayer Service</h4>
-                <p>🙏 Sunday • 12:00 PM – 02:00 PM</p>
+                <p> Sunday • 12:00 PM – 02:00 PM</p>
             </div>
 
         </div>
@@ -926,17 +747,17 @@ target="_blank">
 
             <div class="service-item">
                 <h4>Sunday Worship Service</h4>
-                <p>🕑 Sunday • 02:00 PM – 05:30 PM</p>
+                <p> Sunday • 02:00 PM – 05:30 PM</p>
             </div>
 
             <div class="service-item">
                 <h4>Personal Prayer</h4>
-                <p>🙏 Saturday • 10:00 AM – 02:00 PM</p>
+                <p> Saturday • 10:00 AM – 02:00 PM</p>
             </div>
 
             <div class="service-item">
                 <h4>Fasting Prayer Worship</h4>
-                <p>🔥 Second Saturday • 09:00 AM – 12:00 PM</p>
+                <p> Second Saturday • 09:00 AM – 12:00 PM</p>
             </div>
 
         </div>
@@ -949,12 +770,12 @@ target="_blank">
 
             <div class="service-item">
                 <h4>Sunday Worship Service</h4>
-                <p>🕑 Sunday • 02:00 PM – 05:30 PM</p>
+                <p> Sunday • 02:00 PM – 05:30 PM</p>
             </div>
 
             <div class="service-item">
                 <h4>Personal Prayer</h4>
-                <p>🙏 Tuesday • 10:00 AM – 02:00 PM</p>
+                <p> Tuesday • 10:00 AM – 02:00 PM</p>
             </div>
 
         </div>
@@ -963,179 +784,122 @@ target="_blank">
 
         <div class="service-card">
 
-            <h2>🙏 Shalom Prayer Tower Kattakada Campus</h2>
+            <h2> Shalom Prayer Tower Kattakada Campus</h2>
 
             <div class="service-item">
                 <h4>Sunday Worship Service</h4>
-                <p>🕠 Sunday • 05:30 PM – 08:00 PM</p>
+                <p>Sunday • 05:30 PM – 08:00 PM</p>
             </div>
 
             <div class="service-item">
                 <h4>Personal Prayer</h4>
 
-                <p>📅 Monday • 10:00 AM – 02:00 PM & 05:00 PM – 09:00 PM</p>
+                <p> Monday • 10:00 AM – 02:00 PM & 05:00 PM – 09:00 PM</p>
 
-                <p>📅 Tuesday • 10:00 AM – 02:00 PM & 05:00 PM – 09:00 PM</p>
+                <p> Tuesday • 10:00 AM – 02:00 PM & 05:00 PM – 09:00 PM</p>
 
-                <p>📅 Thursday • 10:00 AM – 02:00 PM & 05:00 PM – 09:00 PM</p>
+                <p> Thursday • 10:00 AM – 02:00 PM & 05:00 PM – 09:00 PM</p>
 
-                <p>📅 Friday • 05:00 PM – 09:00 PM</p>
+                <p> Friday • 05:00 PM – 09:00 PM</p>
             </div>
 
             <div class="service-item">
                 <h4>Fasting Prayer</h4>
-                <p>🔥 Friday • 10:00 AM – 02:00 PM</p>
+                <p> Friday • 10:00 AM – 02:00 PM</p>
             </div>
 
             <div class="service-item">
                 <h4>Friday Worship</h4>
-                <p>🎵 Friday • 06:00 PM – 08:00 PM</p>
+                <p> Friday • 06:00 PM – 08:00 PM</p>
             </div>
 
         </div>
 
     </div>
 
-</section>
-
-</section>
-<!-- CAMPUSES SECTION -->
+<!-- CAMPUSES -->
 
 <section class="section" id="campuses">
 
 <div class="section-title">
-    <h2>Our Campuses</h2>
-    <p>Visit Our Church Locations</p>
+<h2>Our Campuses</h2>
+<p>Visit Our Church Locations</p>
 </div>
 
 <div class="campus-container">
 
-    <!-- CAMPUS 1 -->
+<div class="campus-card">
 
-    <div class="campus-card">
+<h3>📍 Elackodu Campus</h3>
 
-        <h3>📍 Shalom Church- Elackodu Campus</h3>
+<p>Near Panniyode, Kerala</p>
 
-        <p>
-            Near Panniyode, Veeranakavu, Kerala 
-        </p>
-
-
-
-        <div class="map-box">
-
-            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3945.644559233215!2d77.1063900747745!3d8.533845391509047!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3b05b406d9df86af%3A0x6672895903b0274d!2sShalom%20Center!5e0!3m2!1sen!2sin!4v1779329995193!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+<div class="map-box">
+ <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3945.644559233215!2d77.1063900747745!3d8.533845391509047!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3b05b406d9df86af%3A0x6672895903b0274d!2sShalom%20Center!5e0!3m2!1sen!2sin!4v1779329995193!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
       </div>
-<a 
-href="https://wa.me/919400328000"
-class="btn"
-target="_blank">
 
+<a href="https://wa.me/919400328000" class="btn">
 📞 Contact Us
-
 </a>
 
-    </div>
-
-    <!-- CAMPUS 2 -->
-
-    <div class="campus-card">
-
-        <h3>📍 Shalom Church- Thirumala Campus</h3>
-
-        <p>
-            Near Thirumala P.O, Jai Nagar, Kunnapuzha, Thiruvananthapuram, Kerala 
-        </p>
-
-       
-
-        <div class="map-box">
-
-            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3946.095844184396!2d76.995247374774!3d8.490061691551324!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3b05bbbd63e5c2e5%3A0x6dabc5c8ce5b584d!2sShalom%20Church%20-%20City%20Campus!5e0!3m2!1sen!2sin!4v1779332302832!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-
-        </div>
-
-        <a 
-href="https://wa.me/919400328000"
-class="btn"
-target="_blank">
-
-📞 Contact Us
-
-</a>
-
-    </div>
-
-    <!-- CAMPUS 3 -->
-
-    <div class="campus-card">
-
-        <h3>📍 Shalom Church - Poovar Campus</h3>
-
-        <p>
-           Near Poovar, Kerala
-        </p>
-
-   
-
-        <div class="map-box">
-<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1659.8606552425617!2d77.06507136924672!3d8.31907031478562!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3b05a90027105a73%3A0xaf92da5578e26487!2sShalom%20church%20poovar%20campus!5e0!3m2!1sen!2sin!4v1779332634796!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>        </div>
-
-        <a 
-href="https://wa.me/919400328000"
-class="btn"
-target="_blank">
-
-📞 Contact Us
-
-</a>
-
-    </div>
 </div>
-
-   <!-- CAMPUS 4 -->
 
 <div class="campus-card">
 
-    <h3>📍 Shalom Prayer Tower</h3>
+<h3>📍 City Campus</h3>
 
-    <p>
-    Near Choondupalaka, Kattakkada, Kerala 695572
-    </p>
+<p>Thiruvananthapuram, Kerala</p>
 
-    <div class="map-box">
+<div class="map-box">
+  <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3946.095844184396!2d76.995247374774!3d8.490061691551324!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3b05bbbd63e5c2e5%3A0x6dabc5c8ce5b584d!2sShalom%20Church%20-%20City%20Campus!5e0!3m2!1sen!2sin!4v1779332302832!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
 
-        <iframe
-        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d252545.6931925826!2d76.87525330230798!3d8.496808295333032!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3b05b100115d43c7%3A0x5fc650064056c386!2sShalom%20Prayer%20Tower%20-%20Kattakada!5e0!3m2!1sen!2sin!4v1779518746535!5m2!1sen!2sin"
-        width="100%"
-        height="250"
-        style="border:0;"
-        allowfullscreen=""
-        loading="lazy"
-        referrerpolicy="no-referrer-when-downgrade">
+        </div>
 
-        </iframe>
 
-    </div>
-
-    <a 
-    href="https://wa.me/919400328000?text=Hi,%20I%20would%20like%20to%20know%20more%20about%20Shalom%20Prayer%20Tower"
-    class="btn"
-    target="_blank">
-
-    📞 Contact Us
-
-    </a>
+<a href="https://wa.me/919400328000" class="btn">
+📞 Contact Us
+</a>
 
 </div>
 
+<div class="campus-card">
+
+<h3>📍 Poovar Campus</h3>
+
+<p>Poovar, Kerala</p>
+
+<div class="map-box">
+<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1659.8606552425617!2d77.06507136924672!3d8.31907031478562!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3b05a90027105a73%3A0xaf92da5578e26487!2sShalom%20church%20poovar%20campus!5e0!3m2!1sen!2sin!4v1779332634796!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>        </div>
+
+<a href="https://wa.me/919400328000" class="btn">
+📞 Contact Us
+</a>
+
+</div>
+
+<div class="campus-card">
+
+<h3>📍 Prayer Tower</h3>
+
+<p>Kattakkada, Kerala</p>
+
+<div class="map-box">
+<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3945.935649632265!2d77.08701737501273!3d8.505629391536258!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3b05b100115d43c7%3A0x5fc650064056c386!2sShalom%20Prayer%20Tower%20-%20Kattakada!5e0!3m2!1sen!2sin!4v1779521548479!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+
+<a href="https://wa.me/919400328000" class="btn">
+📞 Contact Us
+</a>
+
+</div>
 
 </div>
 
 </section>
+
 <!-- FOOTER -->
 
 <footer>
+
 <div class="social-media">
 
     <a href="https://www.facebook.com/ShalomMinistries1999/" target="_blank">
@@ -1166,7 +930,9 @@ target="_blank">
     </a>
 </div>
 
-    <p>© 2026 Shalom Church | All Rights Reserved</p>
+<p>
+© 2026 Shalom Ministries • Transforming Lives From Darkness To Light
+</p>
 
 </footer>
 
@@ -1175,31 +941,34 @@ target="_blank">
 <a href="https://wa.me/919400328000" class="whatsapp">
 💬
 </a>
-<!-- IMAGE LIGHTBOX -->
+
+<!-- LIGHTBOX -->
 
 <div class="lightbox" id="lightbox">
 
-    <span class="close-btn" onclick="closeImage()">✕</span>
+<span class="close-btn" onclick="closeImage()">✕</span>
 
-    <img id="lightbox-img">
+<img id="lightbox-img">
 
 </div>
+
 <script>
 
 function openImage(src){
 
-    document.getElementById("lightbox").style.display="flex";
+document.getElementById("lightbox").style.display="flex";
 
-    document.getElementById("lightbox-img").src=src;
+document.getElementById("lightbox-img").src=src;
 
 }
 
 function closeImage(){
 
-    document.getElementById("lightbox").style.display="none";
+document.getElementById("lightbox").style.display="none";
 
 }
 
 </script>
+
 </body>
 </html>
