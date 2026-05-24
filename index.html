@@ -159,23 +159,27 @@ nav{
 
 /* LIVE */
 
+/* LIVE STREAM */
+
 .live-box{
     width:100%;
     display:flex;
     justify-content:center;
-    background:rgba(255,255,255,0.03);
-    padding:20px;
-    border-radius:30px;
+    margin-top:40px;
 }
 
 .live-box iframe{
     width:100%;
     max-width:1000px;
-    height:550px;
+
+    aspect-ratio:16/9;
+
+    height:auto;
+
     border:none;
     border-radius:25px;
+    box-shadow:0 15px 40px rgba(0,0,0,0.4);
 }
-
 /* PRAYER */
 
 .prayer-box{
