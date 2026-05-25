@@ -572,6 +572,7 @@ Transforming Lives From Darkness To Light
 <div class="live-box">
 
 <iframe
+id="liveFrame"
 src="https://www.youtube.com/embed/live_stream?channel=UC9Qkm8frHULtpumSht0bTcg"
 allowfullscreen>
 </iframe>
@@ -1000,6 +1001,28 @@ document.getElementById("lightbox").style.display="none";
 }
 
 </script>
+<script>
 
+const iframe = document.getElementById("liveFrame");
+
+iframe.onload = function () {
+
+    try {
+
+        const url = iframe.contentWindow.location.href;
+
+        if(url.includes("offline")){
+            document.getElementById("live").style.display = "none";
+        }
+
+    } catch(e){
+
+        // fallback
+
+    }
+
+};
+
+</script>
 </body>
 </html>
