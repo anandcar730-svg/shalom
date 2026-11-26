@@ -98,7 +98,7 @@ function renderTimes() {
         chosen = s; renderTimes();
         $('sum').textContent = `${longF.format(s.start_ts)} · ${timeF.format(s.start_ts)} (${s.duration_min} min)`;
         $('form').classList.remove('hidden'); $('form').scrollIntoView({behavior:'smooth', block:'start'});
-        setTimeout(() => $('name').focus({preventScroll:true}), 400);
+        setTimeout(() => $('name')?.focus({preventScroll:true}), 400);
       };
       grid.append(b);
     }
