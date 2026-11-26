@@ -8,29 +8,39 @@
 </head>
 <body>
 <header><strong>Shalom Church</strong><a class="back" href="/">Book a slot</a></header>
-<main class="page" style="margin-top:0;max-width:820px">
-  <h1>Your prayer booking</h1>
-  <div class="card" id="box">Loading…</div>
+<main class="page">
+  <div class="card" id="box" style="text-align:center;padding:28px 22px">Loading…</div>
 </main>
 <script>
 const t = new URLSearchParams(location.search).get('t') || '';
 const box = document.getElementById('box');
 async function load() {
   const r = await fetch('/api/booking/' + encodeURIComponent(t)); const d = await r.json();
-  if (!r.ok) { box.textContent = d.error; return; }
   box.textContent = '';
-  const p = document.createElement('p'); p.textContent = `${d.name}, ${d.when}`; p.style.fontSize = '20px'; box.append(p);
-  const st = document.createElement('p'); st.className = 'sub';
-  st.textContent = d.status === 'cancelled' ? 'This booking is cancelled.' : d.past ? 'This slot has passed.' : 'Status: Confirmed';
-  box.append(st);
-  if (d.status === 'booked' && !d.past) {
-    const b = document.createElement('button'); b.className = 'btn danger'; b.textContent = 'Cancel this booking';
+  const mk = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+  if (!r.ok) { box.append(mk('p', 'sub', d.error)); const a = mk('a', 'btn', 'Book a prayer slot'); a.href = '/'; box.append(a); return; }
+  const cancelled = d.status === 'cancelled';
+  const tick = mk('div', 'tick', cancelled ? '✕' : d.past ? '✓' : '✓');
+  tick.style.cssText = 'width:64px;height:64px;border-radius:50%;display:grid;place-items:center;margin:0 auto 14px;font-size:32px;color:#fff;background:' + (cancelled ? 'var(--danger)' : 'var(--brand)');
+  const [day, time] = d.when.split(/, (?=\d{1,2}:\d{2})/);
+  box.append(tick,
+    mk('h2', '', cancelled ? 'Booking cancelled' : d.past ? 'This prayer has taken place' : 'Your prayer is booked'),
+    mk('p', 'sub', 'Shalom ' + d.name));
+  const sum = mk('div', 'summary'); sum.style.cssText = 'margin:18px 0;text-align:left';
+  sum.append(mk('span', '', 'Date and time'), mk('b', '', d.when));
+  box.append(sum);
+  if (!cancelled && !d.past) {
+    const b = mk('button', 'btn danger', 'Cancel this booking'); b.type = 'button';
+    const hint = mk('p', 'hint', 'You will get a WhatsApp message confirming the cancellation.');
     b.onclick = async () => {
-      if (!confirm('Cancel this prayer slot?')) return;
+      if (b.dataset.armed !== '1') { b.dataset.armed = '1'; b.textContent = 'Tap again to confirm cancel'; setTimeout(() => { b.dataset.armed = ''; b.textContent = 'Cancel this booking'; }, 4000); return; }
+      b.disabled = true;
       const x = await fetch(`/api/booking/${encodeURIComponent(t)}/cancel`, {method:'POST'});
-      if (x.ok) load(); else alert((await x.json()).error);
+      if (x.ok) load(); else { b.disabled = false; hint.textContent = (await x.json()).error; }
     };
-    box.append(b);
+    box.append(b, hint);
+  } else {
+    const a = mk('a', 'btn', 'Book another slot'); a.href = '/'; box.append(a);
   }
 }
 load();
