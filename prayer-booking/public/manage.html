@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Your Booking – Shalom Church</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header><strong>Shalom Church</strong><a class="back" href="/">Book a slot</a></header>
+<main>
+  <h1>Your prayer booking</h1>
+  <div class="card" id="box">Loading…</div>
+</main>
+<script>
+const t = new URLSearchParams(location.search).get('t') || '';
+const box = document.getElementById('box');
+async function load() {
+  const r = await fetch('/api/booking/' + encodeURIComponent(t)); const d = await r.json();
+  if (!r.ok) { box.textContent = d.error; return; }
+  box.textContent = '';
+  const p = document.createElement('p'); p.textContent = `${d.name}, ${d.when}`; p.style.fontSize = '20px'; box.append(p);
+  const st = document.createElement('p'); st.className = 'sub';
+  st.textContent = d.status === 'cancelled' ? 'This booking is cancelled.' : d.past ? 'This slot has passed.' : 'Status: Confirmed';
+  box.append(st);
+  if (d.status === 'booked' && !d.past) {
+    const b = document.createElement('button'); b.className = 'btn danger'; b.textContent = 'Cancel this booking';
+    b.onclick = async () => {
+      if (!confirm('Cancel this prayer slot?')) return;
+      const x = await fetch(`/api/booking/${encodeURIComponent(t)}/cancel`, {method:'POST'});
+      if (x.ok) load(); else alert((await x.json()).error);
+    };
+    box.append(b);
+  }
+}
+load();
+</script>
+</body>
+</html>

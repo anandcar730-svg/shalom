@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Admin – Prayer Slots</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header><strong>Prayer Slots – Admin</strong><a class="back" href="/">View public page</a></header>
+<main>
+  <form id="login" class="card">
+    <h2 style="margin-top:0">Admin login</h2>
+    <label for="pw">Password</label><input id="pw" type="password" required autocomplete="current-password">
+    <button class="btn">Log in</button><div id="lerr"></div>
+  </form>
+
+  <div id="app" class="hidden">
+    <form id="add" class="card">
+      <h2 style="margin-top:0">Add slots</h2>
+      <div class="row">
+        <div><label for="date">Date</label><input id="date" type="date" required></div>
+        <div><label for="times">Times (comma separated, 24h)</label><input id="times" required placeholder="06:00, 07:00, 18:30"></div>
+      </div>
+      <div class="row">
+        <div><label for="dur">Minutes per slot</label><input id="dur" type="number" min="5" max="240" value="30"></div>
+        <div><label for="cap">People per slot</label><input id="cap" type="number" min="1" max="100" value="1"></div>
+      </div>
+      <div class="row">
+        <div><label for="weeks">Repeat weekly for (weeks)</label><input id="weeks" type="number" min="1" max="26" value="1"></div>
+        <div><label for="note">Note (optional)</label><input id="note" maxlength="200" placeholder="e.g. Pastor John"></div>
+      </div>
+      <button class="btn">Add slots</button><div id="aerr"></div>
+    </form>
+
+    <h2>Upcoming &amp; past slots</h2>
+    <div id="list"></div>
+    <button class="btn danger sm" id="logout" style="margin-top:30px">Log out</button>
+  </div>
+</main>
+<script>
+const $ = (id) => document.getElementById(id);
+let token = sessionStorage.getItem('adm') || '';
+const when = new Intl.DateTimeFormat('en-IN', {weekday:'short', day:'numeric', month:'short', hour:'numeric', minute:'2-digit', hour12:true, timeZone:'Asia/Kolkata'});
+const say = (el, text, ok) => { el.className = 'msg ' + (ok ? 'ok' : 'err'); el.textContent = text; };
+
+async function api(path, opts = {}) {
+  const r = await fetch(path, {...opts, headers: {'Content-Type':'application/json', Authorization:'Bearer ' + token}});
+  const d = await r.json().catch(() => ({}));
+  if (r.status === 401 && path !== '/api/admin/login') { logout(); throw new Error('Session expired'); }
+  if (!r.ok) throw new Error(d.error || 'Error');
+  return d;
+}
+function show(loggedIn) { $('login').classList.toggle('hidden', loggedIn); $('app').classList.toggle('hidden', !loggedIn); }
+function logout() { token = ''; sessionStorage.removeItem('adm'); show(false); }
+$('logout').onclick = logout;
+
+$('login').onsubmit = async (e) => {
+  e.preventDefault();
+  try { const d = await api('/api/admin/login', {method:'POST', body: JSON.stringify({password: $('pw').value})});
+    token = d.token; sessionStorage.setItem('adm', token); $('pw').value = ''; $('lerr').className = ''; $('lerr').textContent = ''; show(true); refresh();
+  } catch (err) { say($('lerr'), err.message); }
+};
+
+$('add').onsubmit = async (e) => {
+  e.preventDefault();
+  try {
+    const times = $('times').value.split(',').map(s => s.trim()).filter(Boolean).map(s => /^\d:\d{2}$/.test(s) ? '0' + s : s);
+    const d = await api('/api/admin/slots', {method:'POST', body: JSON.stringify({
+      date: $('date').value, times, duration_min: $('dur').value, capacity: $('cap').value, repeatWeeks: $('weeks').value, note: $('note').value})});
+    say($('aerr'), `${d.created} slot(s) added.`, true); refresh();
+  } catch (err) { say($('aerr'), err.message); }
+};
+
+async function refresh() {
+  const slots = await api('/api/admin/slots'); const box = $('list'); box.textContent = '';
+  if (!slots.length) { box.innerHTML = '<p class="empty">No slots yet. Add some above.</p>'; return; }
+  for (const s of slots) {
+    const c = document.createElement('div'); c.className = 'card'; c.style.opacity = s.past ? .55 : 1;
+    const head = document.createElement('div'); head.className = 'slothead';
+    const t = document.createElement('div');
+    t.innerHTML = '<b></b> <span class="pill"></span>';
+    t.querySelector('b').textContent = when.format(s.start_ts) + (s.note ? ' – ' + s.note : '');
+    t.querySelector('.pill').textContent = `${s.bookings.length}/${s.capacity} booked · ${s.duration_min} min`;
+    const del = document.createElement('button'); del.className = 'btn danger sm'; del.textContent = 'Delete slot';
+    del.onclick = async () => {
+      if (!confirm(s.bookings.length ? `Delete this slot? ${s.bookings.length} booked person(s) will be notified on WhatsApp.` : 'Delete this slot?')) return;
+      await api('/api/admin/slots/' + s.id, {method:'DELETE'}); refresh();
+    };
+    head.append(t, del); c.append(head);
+    for (const b of s.bookings) {
+      const r = document.createElement('div'); r.className = 'bk';
+      const info = document.createElement('div');
+      const n = document.createElement('div'); n.textContent = b.name;
+      const ph = document.createElement('a'); ph.href = 'https://wa.me/' + b.phone; ph.target = '_blank'; ph.rel = 'noopener'; ph.textContent = '+' + b.phone;
+      const sm = document.createElement('small'); sm.append(ph);
+      info.append(n, sm);
+      if (b.request) { const q = document.createElement('small'); q.textContent = '📝 ' + b.request; info.append(q); }
+      const x = document.createElement('button'); x.className = 'btn danger sm'; x.textContent = 'Cancel';
+      x.onclick = async () => { if (confirm('Cancel this booking and notify them?')) { await api('/api/admin/bookings/' + b.id, {method:'DELETE'}); refresh(); } };
+      r.append(info, x); c.append(r);
+    }
+    box.append(c);
+  }
+}
+if (token) { show(true); refresh().catch(() => {}); } else show(false);
+</script>
+</body>
+</html>
