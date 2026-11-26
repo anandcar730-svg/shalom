@@ -3,62 +3,69 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Book a Prayer – Shalom Church</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Malayalam:wght@400;500;600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<script src="i18n.js"></script>
 </head>
 <body>
-<header><strong>Shalom Church</strong><a class="back" href="https://www.shalomchurch.co.in">← Back to website</a></header>
+<header><strong>Shalom Church</strong><div class="hright"><a class="back opt" href="https://www.shalomchurch.co.in" data-i18n="back"></a><div class="lang"><button type="button" data-lang="en">EN</button><button type="button" data-lang="ml">മലയാളം</button></div></div></header>
 <section class="hero">
-  <h1>🙏 Book a Personal Prayer</h1>
-  <p>Pick a day and time that suits you. We'll confirm on WhatsApp.</p>
+  <h1 data-i18n="heroTitle"></h1>
+  <p data-i18n="heroSub"></p>
 </section>
 <main>
   <div class="panel" id="p1">
-    <div class="step"><i>1</i> Choose a day</div>
-    <div id="dates" class="dates"><p class="empty">Loading…</p></div>
+    <div class="step"><i>1</i> <span data-i18n="step1"></span></div>
+    <div id="dates" class="dates"><p class="empty" data-i18n="loading"></p></div>
   </div>
 
   <div class="panel hidden" id="p2">
-    <div class="step"><i>2</i> Choose a time</div>
+    <div class="step"><i>2</i> <span data-i18n="step2"></span></div>
     <div id="times"></div>
   </div>
 
   <form class="panel hidden" id="form" novalidate>
-    <div class="step"><i>3</i> Your details</div>
-    <div class="summary"><span>Your prayer slot</span><b id="sum"></b></div>
-    <label for="name">Your name</label>
-    <input id="name" required maxlength="80" autocomplete="name" placeholder="e.g. Mary Thomas">
-    <label for="phone">WhatsApp number</label>
+    <div class="step"><i>3</i> <span data-i18n="step3"></span></div>
+    <div class="summary"><span data-i18n="yourSlot"></span><b id="sum"></b></div>
+    <label for="name" data-i18n="name"></label>
+    <input id="name" required maxlength="80" autocomplete="name" data-i18n-ph="namePh">
+    <label for="phone" data-i18n="phone"></label>
     <div class="phone"><div class="cc">+91</div><input id="phone" type="tel" inputmode="numeric" required autocomplete="tel-national" placeholder="94003 18000"></div>
-    <div class="hint">We'll send your confirmation and a reminder to this number.</div>
-    <label for="req">Prayer request <span class="hint">(optional)</span></label>
-    <textarea id="req" rows="3" maxlength="500" placeholder="Share what you'd like us to pray for"></textarea>
-    <button class="btn" id="go">Confirm my booking</button>
+    <div class="hint" data-i18n="phoneHint"></div>
+    <label for="req"><span data-i18n="req"></span> <span class="hint" data-i18n="optional"></span></label>
+    <textarea id="req" rows="3" maxlength="500" data-i18n-ph="reqPh"></textarea>
+    <button class="btn" id="go" data-i18n="confirm"></button>
     <div id="out"></div>
   </form>
 </main>
 <script>
 const $ = (id) => document.getElementById(id);
 const IST = 'Asia/Kolkata';
-const keyF = new Intl.DateTimeFormat('en-CA', {timeZone: IST});
-const wdF = new Intl.DateTimeFormat('en-IN', {weekday:'short', timeZone: IST});
-const dayF = new Intl.DateTimeFormat('en-IN', {day:'numeric', timeZone: IST});
-const monF = new Intl.DateTimeFormat('en-IN', {month:'short', timeZone: IST});
-const longF = new Intl.DateTimeFormat('en-IN', {weekday:'long', day:'numeric', month:'long', timeZone: IST});
-const timeF = new Intl.DateTimeFormat('en-IN', {hour:'numeric', minute:'2-digit', hour12:true, timeZone: IST});
-const hourF = new Intl.DateTimeFormat('en-GB', {hour:'2-digit', hour12:false, timeZone: IST});
+let keyF, wdF, dayF, monF, longF, timeF, hourF;
+function mkFmt() {
+  const L = locale();
+  keyF = new Intl.DateTimeFormat('en-CA', {timeZone: IST});
+  hourF = new Intl.DateTimeFormat('en-GB', {hour:'2-digit', hour12:false, timeZone: IST});
+  wdF = new Intl.DateTimeFormat(L, {weekday:'short', timeZone: IST});
+  dayF = new Intl.DateTimeFormat(L, {day:'numeric', timeZone: IST});
+  monF = new Intl.DateTimeFormat(L, {month:'short', timeZone: IST});
+  longF = new Intl.DateTimeFormat(L, {weekday:'long', day:'numeric', month:'long', timeZone: IST});
+  timeF = new Intl.DateTimeFormat(L, {hour:'numeric', minute:'2-digit', hour12:true, timeZone: IST});
+}
+mkFmt();
 const el = (t, c, txt) => { const e = document.createElement(t); if (c) e.className = c; if (txt != null) e.textContent = txt; return e; };
 
-let byDay = new Map(), selDay = null, chosen = null;
+let byDay = new Map(), selDay = null, chosen = null, done = null;
+const slotText = (s) => `${longF.format(s.start_ts)} · ${timeF.format(s.start_ts)} (${s.duration_min} ${t('min')})`;
 
 async function load(keepSel) {
   let list = [];
-  try { list = await (await fetch('/api/slots')).json(); } catch { $('dates').replaceChildren(el('p','empty','Could not load slots. Please refresh.')); return; }
+  try { list = await (await fetch('/api/slots')).json(); } catch { $('dates').replaceChildren(el('p','empty',t('loadFail'))); return; }
   byDay = new Map();
   for (const s of list) { const k = keyF.format(s.start_ts); if (!byDay.has(k)) byDay.set(k, []); byDay.get(k).push(s); }
   const open = [...byDay.keys()].filter(k => byDay.get(k).some(s => s.left > 0));
   if (!open.length) {
-    $('dates').replaceChildren(el('p','empty','No slots are open right now. Please check back soon.'));
+    $('dates').replaceChildren(el('p','empty',t('none')));
     $('p2').classList.add('hidden'); $('form').classList.add('hidden'); return;
   }
   if (!keepSel || !byDay.has(selDay)) selDay = open[0];
@@ -69,10 +76,10 @@ function renderDates() {
   const box = $('dates'); box.replaceChildren();
   for (const [k, slots] of byDay) {
     const free = slots.filter(s => s.left > 0).length; if (!free) continue;
-    const t = slots[0].start_ts;
+    const ts = slots[0].start_ts;
     const b = el('button', 'date' + (k === selDay ? ' sel' : ''));
     b.type = 'button';
-    b.append(el('small', '', wdF.format(t)), el('b', '', dayF.format(t)), el('small', '', monF.format(t)));
+    b.append(el('small', '', wdF.format(ts)), el('b', '', dayF.format(ts)), el('small', '', monF.format(ts)));
     b.onclick = () => { selDay = k; chosen = null; $('form').classList.add('hidden'); renderDates(); renderTimes(); $('p2').scrollIntoView({behavior:'smooth', block:'start'}); };
     box.append(b);
   }
@@ -82,21 +89,21 @@ function renderTimes() {
   const slots = byDay.get(selDay) || [];
   $('p2').classList.remove('hidden');
   const box = $('times'); box.replaceChildren();
-  const parts = [['Morning', h => h < 12], ['Afternoon', h => h >= 12 && h < 17], ['Evening', h => h >= 17]];
+  const parts = [['morning', h => h < 12], ['afternoon', h => h >= 12 && h < 17], ['evening', h => h >= 17]];
   for (const [label, test] of parts) {
     const group = slots.filter(s => test(parseInt(hourF.format(s.start_ts))));
     if (!group.length) continue;
-    box.append(el('div', 'part', label));
+    box.append(el('div', 'part', t(label)));
     const grid = el('div', 'times');
     for (const s of group) {
       const b = el('button', 'time' + (chosen && chosen.id === s.id ? ' sel' : '')); b.type = 'button'; b.disabled = s.left === 0;
       b.append(el('b', '', timeF.format(s.start_ts)));
-      if (s.left === 0) b.append(el('small', '', 'Full'));
-      else b.append(el('small', s.left <= 2 && s.capacity > 1 ? 'few' : '', s.capacity === 1 ? 'Available' : `${s.left} spot${s.left > 1 ? 's' : ''} left`));
+      if (s.left === 0) b.append(el('small', '', t('full')));
+      else b.append(el('small', s.left <= 2 && s.capacity > 1 ? 'few' : '', s.capacity === 1 ? t('available') : t('spotsLeft', s.left)));
       if (s.note) b.append(el('small', '', s.note));
       b.onclick = () => {
         chosen = s; renderTimes();
-        $('sum').textContent = `${longF.format(s.start_ts)} · ${timeF.format(s.start_ts)} (${s.duration_min} min)`;
+        $('sum').textContent = slotText(s);
         $('form').classList.remove('hidden'); $('form').scrollIntoView({behavior:'smooth', block:'start'});
         setTimeout(() => $('name')?.focus({preventScroll:true}), 400);
       };
@@ -106,28 +113,39 @@ function renderTimes() {
   }
 }
 
+function renderDone() {
+  const f = $('form'); f.replaceChildren();
+  const box = el('div', 'done');
+  const again = el('button', 'btn', t('another')); again.type = 'button'; again.onclick = () => location.reload();
+  const manage = el('a', 'btn ghost', t('viewCancel')); manage.href = done.manageUrl;
+  box.append(el('div', 'tick', '✓'), el('h2', '', t('doneTitle')), el('p', '', slotText(done.slot)), el('div', 'wa', t('doneWa')), manage, again);
+  f.append(box);
+}
+
+// re-render on language change
+window.onLang = () => {
+  mkFmt();
+  if (done) { renderDone(); return; }
+  if (byDay.size) { renderDates(); renderTimes(); if (chosen) $('sum').textContent = slotText(chosen); }
+  else load();
+};
+
 $('form').onsubmit = async (e) => {
   e.preventDefault(); if (!chosen) return;
   const out = $('out'); out.className = ''; out.textContent = '';
-  if (!$('name').value.trim()) { out.className = 'msg err'; out.textContent = 'Please enter your name.'; $('name').focus(); return; }
-  if ($('phone').value.replace(/\D/g, '').length < 10) { out.className = 'msg err'; out.textContent = 'Please enter your 10-digit WhatsApp number.'; $('phone').focus(); return; }
-  $('go').disabled = true; $('go').textContent = 'Booking…';
+  if (!$('name').value.trim()) { out.className = 'msg err'; out.textContent = t('errName'); $('name').focus(); return; }
+  if ($('phone').value.replace(/\D/g, '').length < 10) { out.className = 'msg err'; out.textContent = t('errPhone'); $('phone').focus(); return; }
+  $('go').disabled = true; $('go').textContent = t('booking');
   try {
     const r = await fetch('/api/book', {method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({slotId: chosen.id, name: $('name').value, phone: $('phone').value, request: $('req').value})});
+      body: JSON.stringify({slotId: chosen.id, name: $('name').value, phone: $('phone').value, request: $('req').value, lang: LANG})});
     const d = await r.json();
-    if (!r.ok) throw new Error(d.error || 'Something went wrong.');
+    if (!r.ok) throw new Error(d.error || t('errGeneric'));
     $('p1').classList.add('hidden'); $('p2').classList.add('hidden');
-    const f = $('form'); f.replaceChildren();
-    const done = el('div', 'done');
-    done.append(el('div', 'tick', '✓'), el('h2', '', 'Your prayer is booked!'), el('p', '', d.when));
-    const wa = el('div', 'wa', '💬 A confirmation has been sent to your WhatsApp.');
-    const manage = el('a', 'btn ghost', 'View or cancel booking'); manage.href = d.manageUrl;
-    const again = el('button', 'btn', 'Book another slot'); again.type = 'button'; again.onclick = () => location.reload();
-    done.append(wa, manage, again); f.append(done);
+    done = {manageUrl: d.manageUrl, slot: chosen}; renderDone();
     window.scrollTo({top: 0, behavior: 'smooth'});
   } catch (err) {
-    out.className = 'msg err'; out.textContent = err.message; $('go').disabled = false; $('go').textContent = 'Confirm my booking'; chosen = null; $('form').classList.add('hidden'); load(true);
+    out.className = 'msg err'; out.textContent = err.message; $('go').disabled = false; $('go').textContent = t('confirm'); chosen = null; $('form').classList.add('hidden'); load(true);
   }
 };
 load();

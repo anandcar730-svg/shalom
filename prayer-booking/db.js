@@ -33,4 +33,7 @@ CREATE INDEX IF NOT EXISTS idx_slots_start ON slots(start_ts);
 CREATE INDEX IF NOT EXISTS idx_bookings_slot ON bookings(slot_id, status);
 `);
 
+// migration: remember each person's language for WhatsApp messages
+try { db.exec(`ALTER TABLE bookings ADD COLUMN lang TEXT NOT NULL DEFAULT 'en'`); } catch {}
+
 module.exports = db;

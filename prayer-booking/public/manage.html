@@ -3,46 +3,55 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Your Booking – Shalom Church</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Malayalam:wght@400;500;600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<script src="i18n.js"></script>
 </head>
 <body>
-<header><strong>Shalom Church</strong><a class="back" href="/">Book a slot</a></header>
+<header><strong>Shalom Church</strong><div class="hright"><a class="back opt" href="/" data-i18n="bookSlot"></a><div class="lang"><button type="button" data-lang="en">EN</button><button type="button" data-lang="ml">മലയാളം</button></div></div></header>
 <main class="page">
-  <div class="card" id="box" style="text-align:center;padding:28px 22px">Loading…</div>
+  <div class="card" id="box" style="text-align:center;padding:28px 22px">…</div>
 </main>
 <script>
-const t = new URLSearchParams(location.search).get('t') || '';
+const tok = new URLSearchParams(location.search).get('t') || '';
 const box = document.getElementById('box');
+let data = null, err = null;
+const mk = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+const whenText = (ts) => new Intl.DateTimeFormat(locale(), {weekday:'short', day:'numeric', month:'short', hour:'numeric', minute:'2-digit', hour12:true, timeZone:'Asia/Kolkata'}).format(ts);
+
 async function load() {
-  const r = await fetch('/api/booking/' + encodeURIComponent(t)); const d = await r.json();
+  const r = await fetch('/api/booking/' + encodeURIComponent(tok)); const d = await r.json();
+  if (!r.ok) { err = d.error; data = null; } else { data = d; err = null; }
+  render();
+}
+function render() {
   box.textContent = '';
-  const mk = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
-  if (!r.ok) { box.append(mk('p', 'sub', d.error)); const a = mk('a', 'btn', 'Book a prayer slot'); a.href = '/'; box.append(a); return; }
-  const cancelled = d.status === 'cancelled';
-  const tick = mk('div', 'tick', cancelled ? '✕' : d.past ? '✓' : '✓');
+  if (err) { box.append(mk('p', 'sub', err)); const a = mk('a', 'btn', t('mBookPrayer')); a.href = '/'; box.append(a); return; }
+  if (!data) return;
+  const cancelled = data.status === 'cancelled';
+  const tick = mk('div', '', cancelled ? '✕' : '✓');
   tick.style.cssText = 'width:64px;height:64px;border-radius:50%;display:grid;place-items:center;margin:0 auto 14px;font-size:32px;color:#fff;background:' + (cancelled ? 'var(--danger)' : 'var(--brand)');
-  const [day, time] = d.when.split(/, (?=\d{1,2}:\d{2})/);
   box.append(tick,
-    mk('h2', '', cancelled ? 'Booking cancelled' : d.past ? 'This prayer has taken place' : 'Your prayer is booked'),
-    mk('p', 'sub', 'Shalom ' + d.name));
+    mk('h2', '', cancelled ? t('mCancelled') : data.past ? t('mPast') : t('mBooked')),
+    mk('p', 'sub', t('mShalom') + ' ' + data.name));
   const sum = mk('div', 'summary'); sum.style.cssText = 'margin:18px 0;text-align:left';
-  sum.append(mk('span', '', 'Date and time'), mk('b', '', d.when));
+  sum.append(mk('span', '', t('mWhen')), mk('b', '', whenText(data.start_ts)));
   box.append(sum);
-  if (!cancelled && !d.past) {
-    const b = mk('button', 'btn danger', 'Cancel this booking'); b.type = 'button';
-    const hint = mk('p', 'hint', 'You will get a WhatsApp message confirming the cancellation.');
+  if (!cancelled && !data.past) {
+    const b = mk('button', 'btn danger', t('mCancel')); b.type = 'button';
+    const hint = mk('p', 'hint', t('mHint'));
     b.onclick = async () => {
-      if (b.dataset.armed !== '1') { b.dataset.armed = '1'; b.textContent = 'Tap again to confirm cancel'; setTimeout(() => { b.dataset.armed = ''; b.textContent = 'Cancel this booking'; }, 4000); return; }
+      if (b.dataset.armed !== '1') { b.dataset.armed = '1'; b.textContent = t('mAgain'); setTimeout(() => { b.dataset.armed = ''; b.textContent = t('mCancel'); }, 4000); return; }
       b.disabled = true;
-      const x = await fetch(`/api/booking/${encodeURIComponent(t)}/cancel`, {method:'POST'});
+      const x = await fetch(`/api/booking/${encodeURIComponent(tok)}/cancel`, {method:'POST'});
       if (x.ok) load(); else { b.disabled = false; hint.textContent = (await x.json()).error; }
     };
     box.append(b, hint);
   } else {
-    const a = mk('a', 'btn', 'Book another slot'); a.href = '/'; box.append(a);
+    const a = mk('a', 'btn', t('another')); a.href = '/'; box.append(a);
   }
 }
+window.onLang = render;
 load();
 </script>
 </body>

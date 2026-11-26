@@ -65,10 +65,28 @@ function normalizePhone(raw = '') {
   return d.length >= 11 && d.length <= 15 ? d : null;
 }
 const toStart = (date, time) => new Date(`${date}T${time}:00${TZ_OFFSET}`).getTime();
-const fmt = (s) =>
-  new Date(s.start_ts).toLocaleString('en-IN', {
+const fmt = (s, lang = 'en') =>
+  new Date(s.start_ts).toLocaleString(lang === 'ml' ? 'ml-IN' : 'en-IN', {
     timeZone: 'Asia/Kolkata', weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit', hour12: true,
   });
+const LANGS = ['en', 'ml'];
+const pickLang = (l) => (LANGS.includes(l) ? l : 'en');
+
+// WhatsApp texts the visitor receives, per language
+const T = {
+  en: {
+    confirm: (n, w, m, u) => `🙏 Shalom ${n}!\nYour prayer slot is confirmed:\n📅 ${w} (${m} min)\nWe will send a reminder before your slot.\nTo cancel or view: ${u}`,
+    cancelled: (w) => `Your prayer slot on ${w} has been cancelled. You are welcome to book again anytime. 🙏`,
+    churchCancel: (n, w, u) => `Shalom ${n}, we are sorry – your prayer slot on ${w} has been cancelled by the church. Please book another time: ${u} 🙏`,
+    reminder: (n, w) => `🔔 Reminder: Shalom ${n}, your prayer slot is ${w}. God bless you! 🙏`,
+  },
+  ml: {
+    confirm: (n, w, m, u) => `🙏 ഷാലോം ${n}!\nനിങ്ങളുടെ പ്രാർത്ഥനാ സമയം സ്ഥിരീകരിച്ചു:\n📅 ${w} (${m} മിനിറ്റ്)\nസമയത്തിന് മുമ്പ് ഒരു ഓർമ്മപ്പെടുത്തൽ അയയ്ക്കും.\nകാണാനോ റദ്ദാക്കാനോ: ${u}`,
+    cancelled: (w) => `${w}-ലെ നിങ്ങളുടെ പ്രാർത്ഥനാ സമയം റദ്ദാക്കി. ഏത് സമയത്തും വീണ്ടും ബുക്ക് ചെയ്യാം. 🙏`,
+    churchCancel: (n, w, u) => `ഷാലോം ${n}, ക്ഷമിക്കണം – ${w}-ലെ നിങ്ങളുടെ പ്രാർത്ഥനാ സമയം സഭ റദ്ദാക്കി. മറ്റൊരു സമയം ബുക്ക് ചെയ്യുക: ${u} 🙏`,
+    reminder: (n, w) => `🔔 ഓർമ്മപ്പെടുത്തൽ: ഷാലോം ${n}, നിങ്ങളുടെ പ്രാർത്ഥനാ സമയം ${w}. ദൈവം അനുഗ്രഹിക്കട്ടെ! 🙏`,
+  },
+};
 const clean = (s, n) => String(s || '').replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, n);
 
 const slotRow = db.prepare(`
@@ -89,6 +107,7 @@ app.post('/api/book', limit(10, 3600 * 1000), async (req, res) => {
   const phone = normalizePhone(req.body.phone);
   const request = clean(req.body.request, 500);
   const slotId = Number(req.body.slotId);
+  const lang = pickLang(req.body.lang);
   if (!name) return res.status(400).json({ error: 'Please enter your name.' });
   if (!phone) return res.status(400).json({ error: 'Please enter a valid WhatsApp number.' });
   if (!Number.isInteger(slotId)) return res.status(400).json({ error: 'Invalid slot.' });
@@ -102,8 +121,8 @@ app.post('/api/book', limit(10, 3600 * 1000), async (req, res) => {
     if (slot.booked >= slot.capacity) throw new Error('Sorry, this slot was just taken. Please pick another.');
     const dup = db.prepare(`SELECT 1 FROM bookings WHERE slot_id=? AND phone=? AND status='booked'`).get(slotId, phone);
     if (dup) throw new Error('You have already booked this slot.');
-    const r = db.prepare(`INSERT INTO bookings (slot_id,name,phone,request,token,created_at) VALUES (?,?,?,?,?,?)`)
-      .run(slotId, name, phone, request, token, Date.now());
+    const r = db.prepare(`INSERT INTO bookings (slot_id,name,phone,request,token,lang,created_at) VALUES (?,?,?,?,?,?,?)`)
+      .run(slotId, name, phone, request, token, lang, Date.now());
     bookingId = Number(r.lastInsertRowid);
     db.exec('COMMIT');
   } catch (e) {
@@ -112,21 +131,19 @@ app.post('/api/book', limit(10, 3600 * 1000), async (req, res) => {
   }
 
   const cancelUrl = `${BASE_URL}/manage.html?t=${token}`;
-  sendWhatsApp(phone,
-    `🙏 Shalom ${name}!\nYour prayer slot is confirmed:\n📅 ${fmt(slot)} (${slot.duration_min} min)\n` +
-    `We will send a reminder before your slot.\nTo cancel or view: ${cancelUrl}`);
+  sendWhatsApp(phone, T[lang].confirm(name, fmt(slot, lang), slot.duration_min, cancelUrl));
   if (ADMIN_WHATSAPP) {
     sendWhatsApp(ADMIN_WHATSAPP,
       `🆕 New prayer booking\n${name} (+${phone})\n📅 ${fmt(slot)}${request ? `\n📝 ${request}` : ''}`);
   }
-  res.json({ ok: true, bookingId, token, manageUrl: cancelUrl, when: fmt(slot) });
+  res.json({ ok: true, bookingId, token, manageUrl: cancelUrl, when: fmt(slot, lang) });
 });
 
 // Booking self-service (via token from the WhatsApp link)
 app.get('/api/booking/:token', (req, res) => {
-  const b = db.prepare(`SELECT b.name,b.status,b.token,s.id sid,s.start_ts,s.duration_min FROM bookings b JOIN slots s ON s.id=b.slot_id WHERE b.token=?`).get(req.params.token);
+  const b = db.prepare(`SELECT b.name,b.status,b.token,b.lang,s.id sid,s.start_ts,s.duration_min FROM bookings b JOIN slots s ON s.id=b.slot_id WHERE b.token=?`).get(req.params.token);
   if (!b) return res.status(404).json({ error: 'Booking not found.' });
-  res.json({ name: b.name, status: b.status, when: fmt(b), past: b.start_ts <= Date.now() });
+  res.json({ name: b.name, status: b.status, when: fmt(b, b.lang), start_ts: b.start_ts, past: b.start_ts <= Date.now() });
 });
 
 app.post('/api/booking/:token/cancel', limit(10, 3600 * 1000), async (req, res) => {
@@ -135,7 +152,7 @@ app.post('/api/booking/:token/cancel', limit(10, 3600 * 1000), async (req, res) 
   if (b.status === 'cancelled') return res.json({ ok: true });
   if (b.start_ts <= Date.now()) return res.status(400).json({ error: 'This slot has already passed.' });
   db.prepare(`UPDATE bookings SET status='cancelled' WHERE id=?`).run(b.id);
-  sendWhatsApp(b.phone, `Your prayer slot on ${fmt(b)} has been cancelled. You are welcome to book again anytime. 🙏`);
+  sendWhatsApp(b.phone, T[pickLang(b.lang)].cancelled(fmt(b, pickLang(b.lang))));
   if (ADMIN_WHATSAPP) sendWhatsApp(ADMIN_WHATSAPP, `❌ Booking cancelled: ${b.name} (+${b.phone}) – ${fmt(b)}`);
   res.json({ ok: true });
 });
@@ -183,11 +200,12 @@ app.post('/api/admin/slots', requireAdmin, (req, res) => {
 app.delete('/api/admin/slots/:id', requireAdmin, async (req, res) => {
   const s = slotRow.get(Number(req.params.id));
   if (!s) return res.status(404).json({ error: 'Slot not found.' });
-  const people = db.prepare(`SELECT name,phone FROM bookings WHERE slot_id=? AND status='booked'`).all(s.id);
+  const people = db.prepare(`SELECT name,phone,lang FROM bookings WHERE slot_id=? AND status='booked'`).all(s.id);
   db.prepare(`DELETE FROM slots WHERE id=?`).run(s.id);
   if (s.start_ts > Date.now()) {
     for (const p of people) {
-      sendWhatsApp(p.phone, `Shalom ${p.name}, we are sorry – your prayer slot on ${fmt(s)} has been cancelled by the church. Please book another time: ${BASE_URL} 🙏`);
+      const l = pickLang(p.lang);
+      sendWhatsApp(p.phone, T[l].churchCancel(p.name, fmt(s, l), BASE_URL));
     }
   }
   res.json({ ok: true, notified: people.length });
@@ -197,7 +215,8 @@ app.delete('/api/admin/bookings/:id', requireAdmin, (req, res) => {
   const b = db.prepare(`SELECT b.*,s.start_ts FROM bookings b JOIN slots s ON s.id=b.slot_id WHERE b.id=?`).get(Number(req.params.id));
   if (!b) return res.status(404).json({ error: 'Booking not found.' });
   db.prepare(`UPDATE bookings SET status='cancelled' WHERE id=?`).run(b.id);
-  sendWhatsApp(b.phone, `Shalom ${b.name}, your prayer slot on ${fmt(b)} was cancelled by the church. Please book another time: ${BASE_URL} 🙏`);
+  const l = pickLang(b.lang);
+  sendWhatsApp(b.phone, T[l].churchCancel(b.name, fmt(b, l), BASE_URL));
   res.json({ ok: true });
 });
 
@@ -205,11 +224,12 @@ app.delete('/api/admin/bookings/:id', requireAdmin, (req, res) => {
 setInterval(() => {
   const now = Date.now();
   const due = db.prepare(`
-    SELECT b.id,b.name,b.phone,s.start_ts,s.duration_min FROM bookings b JOIN slots s ON s.id=b.slot_id
+    SELECT b.id,b.name,b.phone,b.lang,s.start_ts,s.duration_min FROM bookings b JOIN slots s ON s.id=b.slot_id
     WHERE b.status='booked' AND b.reminded=0 AND s.start_ts > ? AND s.start_ts <= ?`).all(now, now + 24 * 3600 * 1000);
   for (const b of due) {
     db.prepare(`UPDATE bookings SET reminded=1 WHERE id=?`).run(b.id);
-    sendWhatsApp(b.phone, `🔔 Reminder: Shalom ${b.name}, your prayer slot is ${fmt(b)}. God bless you! 🙏`);
+    const l = pickLang(b.lang);
+    sendWhatsApp(b.phone, T[l].reminder(b.name, fmt(b, l)));
   }
 }, 5 * 60 * 1000).unref();
 
