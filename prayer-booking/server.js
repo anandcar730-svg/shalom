@@ -72,9 +72,11 @@ const fmt = (s, lang = 'en') =>
 // Prayer centers. `days` = weekdays when the center is open for booking (0=Sun..6=Sat); null = every day.
 const CENTERS = {
   kattakada: { en: 'Kattakada Shalom', ml: 'കാട്ടാക്കട ഷാലോം', days: null },
-  thirumala: { en: 'Thirumala Shalom', ml: 'തിരുമല ഷാലോം', days: [1, 2] }, // Mon, Tue
-  poovar: { en: 'Poovar Shalom', ml: 'പൂവാർ ഷാലോം', days: [1, 2] },       // Mon, Tue
+  thirumala: { en: 'Thirumala Shalom', ml: 'തിരുമല ഷാലോം', days: [2, 6] }, // Tuesday, Saturday
+  poovar: { en: 'Poovar Shalom', ml: 'പൂവാർ ഷാലോം', days: [2] },            // Tuesday
 };
+const DAY_NAMES = ['Sundays', 'Mondays', 'Tuesdays', 'Wednesdays', 'Thursdays', 'Fridays', 'Saturdays'];
+const centerDays = (c) => (CENTERS[c].days || []).map((d) => DAY_NAMES[d]).join(' and ');
 const centerName = (c, lang = 'en') => (CENTERS[c] || CENTERS.kattakada)[lang];
 const weekdayOf = (date) => new Date(`${date}T12:00:00Z`).getUTCDay(); // weekday of a calendar date
 const centerOpenOn = (c, date) => !!CENTERS[c] && (!CENTERS[c].days || CENTERS[c].days.includes(weekdayOf(date)));
@@ -134,7 +136,7 @@ app.post('/api/book', limit(10, 3600 * 1000), async (req, res) => {
     slot = slotRow.get(slotId);
     if (!slot || slot.start_ts <= Date.now()) throw new Error('This slot is no longer available.');
     if (!bookableDates().includes(slot.date)) throw new Error('Appointments can only be booked for today and tomorrow.');
-    if (!centerOpenOn(slot.center, slot.date)) throw new Error(`${centerName(slot.center)} is open only on Mondays and Tuesdays.`);
+    if (!centerOpenOn(slot.center, slot.date)) throw new Error(`${centerName(slot.center)} is open only on ${centerDays(slot.center)}.`);
     if (slot.booked >= slot.capacity) throw new Error('Sorry, this slot was just taken. Please pick another.');
     const dup = db.prepare(`SELECT 1 FROM bookings WHERE slot_id=? AND phone=? AND status='booked'`).get(slotId, phone);
     if (dup) throw new Error('You have already booked this slot.');
@@ -198,7 +200,7 @@ app.post('/api/admin/slots', requireAdmin, (req, res) => {
   const center = CENTERS[req.body.center] ? req.body.center : 'kattakada';
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date || '')) return res.status(400).json({ error: 'Pick a valid date.' });
   if (!times.length || !times.every((t) => /^\d{2}:\d{2}$/.test(t || ''))) return res.status(400).json({ error: 'Enter at least one valid time.' });
-  if (!centerOpenOn(center, date)) return res.status(400).json({ error: `${centerName(center)} slots can only be added on Mondays and Tuesdays.` });
+  if (!centerOpenOn(center, date)) return res.status(400).json({ error: `${centerName(center)} slots can only be added on ${centerDays(center)}.` });
   const dur = Math.min(Math.max(parseInt(duration_min) || 30, 5), 240);
   const cap = Math.min(Math.max(parseInt(capacity) || 1, 1), 100);
   const weeks = Math.min(Math.max(parseInt(repeatWeeks) || 1, 1), 26);

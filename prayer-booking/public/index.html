@@ -49,9 +49,9 @@ const $ = (id) => document.getElementById(id);
 const IST = 'Asia/Kolkata';
 // Centers. days = weekdays open (0=Sun..6=Sat); null = every day. The server enforces the same rule.
 const CENTERS = [
-  {id: 'kattakada', days: null},
-  {id: 'thirumala', days: [1, 2]},
-  {id: 'poovar', days: [1, 2]},
+  {id: 'kattakada', days: null, note: 'everyDay'},
+  {id: 'thirumala', days: [2, 6], note: 'monTue'},   // Tuesday, Saturday (key name kept; text says Tue/Sat)
+  {id: 'poovar', days: [2], note: 'tueOnly'},        // Tuesday
 ];
 let keyF, dayF, longF, timeF, hourF;
 function mkFmt() {
@@ -97,7 +97,7 @@ function render() {
     box.append(b);
   }
   if (!selDay) {
-    nomsg.className = 'notice'; nomsg.textContent = t(center.days ? 'noSlotsCenterMT' : 'noSlotsCenter', centerLabel(center.id));
+    nomsg.className = 'notice'; nomsg.textContent = center.days ? t('noSlotsCenterMT', centerLabel(center.id), t(center.note)) : t('noSlotsCenter', centerLabel(center.id));
     p2.classList.add('hidden'); form.classList.add('hidden'); chosen = null; return;
   }
   nomsg.className = 'hidden'; nomsg.textContent = '';
@@ -108,7 +108,7 @@ function renderCenters() {
   const box = $('centers'); box.replaceChildren();
   for (const c of CENTERS) {
     const b = el('button', 'center' + (center && center.id === c.id ? ' sel' : '')); b.type = 'button';
-    b.append(el('b', '', centerLabel(c.id)), el('small', '', t(c.days ? 'monTue' : 'everyDay')));
+    b.append(el('b', '', centerLabel(c.id)), el('small', '', t(c.note)));
     b.onclick = () => { center = c; selDay = null; chosen = null; $('form').classList.add('hidden'); render(); $('p1').scrollIntoView({behavior:'smooth', block:'start'}); };
     box.append(b);
   }
