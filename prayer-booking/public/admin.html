@@ -31,6 +31,12 @@
         <div class="stat"><b id="stToday">0</b><span data-i18n="sToday"></span></div>
         <div class="stat"><b id="stSlots">0</b><span data-i18n="sSlotsBooked"></span></div>
       </div>
+      <select id="fcenter" style="margin-bottom:12px">
+        <option value="" data-i18n="allCenters"></option>
+        <option value="kattakada" data-i18n="cKattakada"></option>
+        <option value="thirumala" data-i18n="cThirumala"></option>
+        <option value="poovar" data-i18n="cPoovar"></option>
+      </select>
       <div class="seg"><button type="button" data-seg="up" class="on" data-i18n="sUpcoming"></button><button type="button" data-seg="past" data-i18n="sPast"></button></div>
       <div id="bkList"></div>
     </section>
@@ -39,6 +45,13 @@
     <section id="tab-slots" class="hidden">
       <form id="add" class="card">
         <h2 style="margin-top:0" data-i18n="addSlots"></h2>
+        <label for="center" data-i18n="center"></label>
+        <select id="center">
+          <option value="kattakada" data-i18n="cKattakada"></option>
+          <option value="thirumala" data-i18n="cThirumala"></option>
+          <option value="poovar" data-i18n="cPoovar"></option>
+        </select>
+        <div class="hint" data-i18n="centerHint"></div>
         <div class="row">
           <div><label for="date" data-i18n="date"></label><input id="date" type="date" required></div>
           <div><label for="atimes" data-i18n="times"></label><input id="atimes" required data-i18n-ph="timesPh"></div>
@@ -103,6 +116,7 @@ document.querySelectorAll('.tabs button').forEach((b) => b.onclick = () => {
   $('tab-bookings').classList.toggle('hidden', b.dataset.tab !== 'bookings');
   $('tab-slots').classList.toggle('hidden', b.dataset.tab !== 'slots');
 });
+$('fcenter').onchange = () => renderBookings();
 document.querySelectorAll('.seg button').forEach((b) => b.onclick = () => {
   seg = b.dataset.seg; document.querySelectorAll('.seg button').forEach((x) => x.classList.toggle('on', x === b)); renderBookings();
 });
@@ -119,8 +133,10 @@ $('add').onsubmit = async (e) => {
   e.preventDefault();
   try {
     const times = $('atimes').value.split(',').map(s => s.trim()).filter(Boolean).map(s => /^\d:\d{2}$/.test(s) ? '0' + s : s);
+    const wd = new Date($('date').value + 'T12:00:00Z').getUTCDay();
+    if ($('center').value !== 'kattakada' && wd !== 1 && wd !== 2) { say($('aerr'), t('errMonTue')); return; }
     const d = await api('/api/admin/slots', {method:'POST', body: JSON.stringify({
-      date: $('date').value, times, duration_min: $('dur').value, capacity: $('cap').value, repeatWeeks: $('weeks').value, note: $('note').value})});
+      center: $('center').value, date: $('date').value, times, duration_min: $('dur').value, capacity: $('cap').value, repeatWeeks: $('weeks').value, note: $('note').value})});
     say($('aerr'), t('added', d.created), true); refresh();
   } catch (err) { say($('aerr'), err.message); }
 };
@@ -131,7 +147,8 @@ async function refresh() { slots = await api('/api/admin/slots'); renderBookings
 function waLink(phone) { const a = mk('a', '', '+' + phone); a.href = 'https://wa.me/' + phone; a.target = '_blank'; a.rel = 'noopener'; a.title = t('chat'); return a; }
 
 function renderBookings() {
-  const withB = slots.filter((s) => s.bookings.length);
+  const fc = $('fcenter').value;
+  const withB = slots.filter((s) => s.bookings.length && (!fc || s.center === fc));
   const up = withB.filter((s) => !s.past).sort((a, b) => a.start_ts - b.start_ts);
   const past = withB.filter((s) => s.past).sort((a, b) => b.start_ts - a.start_ts);
   const todayKey = F.key.format(Date.now());
@@ -147,12 +164,12 @@ function renderBookings() {
     if (k !== lastDay) { box.append(mk('div', 'dayh', F.day.format(s.start_ts))); lastDay = k; }
     const c = mk('div', 'bkcard'); if (s.past) c.style.opacity = .7;
     const head = mk('div', 'slothead');
-    const left = mk('div'); left.append(mk('span', 'time-big', F.time.format(s.start_ts)), document.createTextNode(' '), mk('span', 'pill', `${t('people', s.bookings.length)} · ${s.duration_min} ${t('minShort')}` + (s.note ? ' · ' + s.note : '')));
+    const left = mk('div'); left.append(mk('span', 'time-big', F.time.format(s.start_ts)), document.createTextNode(' '), mk('span', 'centertag', centerLabel(s.center)), document.createTextNode(' '), mk('span', 'pill', `${t('people', s.bookings.length)} · ${s.duration_min} ${t('minShort')}` + (s.note ? ' · ' + s.note : '')));
     head.append(left); c.append(head);
     for (const b of s.bookings) {
       const r = mk('div', 'bk'); const who = mk('div', 'who');
       who.append(mk('b', '', b.name)); const sm = mk('small'); sm.append(t('phoneLbl') + ': ', waLink(b.phone)); who.append(sm);
-      if (b.request) who.append(mk('div', 'reqtxt', '📝 ' + b.request));
+      if (b.place) who.append(mk('div', 'reqtxt', '🏠 ' + t('placeLbl') + ': ' + b.place));
       r.append(who);
       if (!s.past) {
         const x = mk('button', 'btn danger sm');
@@ -174,7 +191,7 @@ function renderSlots() {
   for (const s of all) {
     const c = mk('div', 'card'); c.style.opacity = s.past ? .55 : 1;
     const head = mk('div', 'slothead');
-    const info = mk('div'); info.append(mk('b', '', F.full.format(s.start_ts) + (s.note ? ' – ' + s.note : '')), document.createTextNode(' '),
+    const info = mk('div'); info.append(mk('b', '', F.full.format(s.start_ts) + (s.note ? ' – ' + s.note : '')), document.createTextNode(' '), mk('span', 'centertag', centerLabel(s.center)), document.createTextNode(' '),
       mk('span', 'pill', `${s.bookings.length}/${s.capacity} ${t('booked')} · ${s.duration_min} ${t('minShort')}`));
     const del = mk('button', 'btn danger sm');
     confirmBtn(del, t('delSlot'), s.bookings.length ? t('confirmDelSlotN', s.bookings.length) : t('confirmDelSlot'), async () => { await api('/api/admin/slots/' + s.id, {method:'DELETE'}); refresh(); });

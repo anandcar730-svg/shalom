@@ -10,6 +10,8 @@ Object.assign(I18N.en, {
   booked: 'booked', minShort: 'min', delSlot: 'Delete slot', cancel: 'Cancel',
   confirmDelSlot: 'Delete this slot?', confirmDelSlotN: (n) => `Delete this slot? ${n} booked person(s) will be notified on WhatsApp.`,
   confirmCancel: 'Cancel this booking and notify them?', chat: 'Chat on WhatsApp', yes: 'Yes', no: 'No', phoneLbl: 'WhatsApp',
+  center: 'Prayer center', centerHint: 'Thirumala and Poovar are open on Mondays and Tuesdays only.', errMonTue: 'Thirumala and Poovar slots can only be added on Mondays and Tuesdays. Pick a Monday or Tuesday.',
+  allCenters: 'All centers', placeLbl: 'Place',
 });
 Object.assign(I18N.ml, {
   aTitle: 'പ്രാർത്ഥനാ അഡ്മിൻ', aView: 'പൊതു പേജ് കാണുക', aLogin: 'അഡ്മിൻ ലോഗിൻ', aPw: 'പാസ്‌വേഡ്', aLoginBtn: 'ലോഗിൻ', aLogout: 'ലോഗൗട്ട്',
@@ -23,4 +25,6 @@ Object.assign(I18N.ml, {
   booked: 'ബുക്ക് ചെയ്തു', minShort: 'മിനിറ്റ്', delSlot: 'സമയം ഒഴിവാക്കുക', cancel: 'റദ്ദാക്കുക',
   confirmDelSlot: 'ഈ സമയം ഒഴിവാക്കണോ?', confirmDelSlotN: (n) => `ഈ സമയം ഒഴിവാക്കണോ? ബുക്ക് ചെയ്ത ${n} പേർക്ക് വാട്സ്ആപ്പിൽ അറിയിപ്പ് പോകും.`,
   confirmCancel: 'ഈ ബുക്കിംഗ് റദ്ദാക്കി അവരെ അറിയിക്കണോ?', chat: 'വാട്സ്ആപ്പിൽ സംസാരിക്കുക', yes: 'അതെ', no: 'അല്ല', phoneLbl: 'വാട്സ്ആപ്പ്',
+  center: 'പ്രാർത്ഥനാ കേന്ദ്രം', centerHint: 'തിരുമലയും പൂവാറും തിങ്കൾ, ചൊവ്വ ദിവസങ്ങളിൽ മാത്രം.', errMonTue: 'തിരുമല, പൂവാർ എന്നിവയുടെ സമയങ്ങൾ തിങ്കൾ, ചൊവ്വ ദിവസങ്ങളിൽ മാത്രമേ ചേർക്കാനാകൂ. തിങ്കളോ ചൊവ്വയോ തിരഞ്ഞെടുക്കുക.',
+  allCenters: 'എല്ലാ കേന്ദ്രങ്ങളും', placeLbl: 'സ്ഥലം',
 });

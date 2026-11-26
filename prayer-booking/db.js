@@ -36,4 +36,8 @@ CREATE INDEX IF NOT EXISTS idx_bookings_slot ON bookings(slot_id, status);
 // migration: remember each person's language for WhatsApp messages
 try { db.exec(`ALTER TABLE bookings ADD COLUMN lang TEXT NOT NULL DEFAULT 'en'`); } catch {}
 
+// migrations: prayer center per slot, place (town) per booking
+try { db.exec(`ALTER TABLE slots ADD COLUMN center TEXT NOT NULL DEFAULT 'kattakada'`); } catch {}
+try { db.exec(`ALTER TABLE bookings ADD COLUMN place TEXT NOT NULL DEFAULT ''`); } catch {}
+
 module.exports = db;

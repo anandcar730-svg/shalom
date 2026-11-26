@@ -15,6 +15,15 @@ Requires Node 22.13+ (uses the built-in `node:sqlite`, no database to install).
 - Admin page: `/admin.html` (password from `.env`)
 - Cancel/view link (sent on WhatsApp): `/manage.html?t=<token>`
 
+## Appointment rules
+- Visitors book a **personal prayer appointment** with name, WhatsApp number and place (no prayer-request field).
+- Only **today and tomorrow** can be booked (India time). Anything later is hidden and refused by the server.
+- Three centers: **Kattakada Shalom** (any day), **Thirumala Shalom** and **Poovar Shalom** (Mondays and Tuesdays only).
+  The admin cannot add Thirumala or Poovar slots on other weekdays, and the server refuses such bookings even if a slot exists.
+  Edit the `CENTERS` table in `server.js` (and `CENTERS` in `public/index.html`) to change names or days.
+- Reminders go out 2 hours before the appointment, only for bookings made 3+ hours ahead.
+- Existing slots from before this change are treated as Kattakada.
+
 ## How it works
 - **Admin** adds slots (date, times, minutes, people per slot, optional weekly repeat), sees who booked
   (with a tap-to-chat WhatsApp link and their prayer request), cancels a booking, or deletes a slot

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Book a Prayer – Shalom Church</title>
+<title>Prayer Appointment – Shalom Church</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Malayalam:wght@400;500;600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <script src="i18n.js"></script>
@@ -14,26 +14,32 @@
   <p data-i18n="heroSub"></p>
 </section>
 <main>
-  <div class="panel" id="p1">
+  <div class="panel" id="p0">
     <div class="step"><i>1</i> <span data-i18n="step1"></span></div>
-    <div id="dates" class="dates"><p class="empty" data-i18n="loading"></p></div>
+    <div id="centers" class="centers"></div>
+  </div>
+
+  <div class="panel hidden" id="p1">
+    <div class="step"><i>2</i> <span data-i18n="step2"></span></div>
+    <div id="dates" class="days2"></div>
+    <div id="nomsg" class="notice hidden"></div>
   </div>
 
   <div class="panel hidden" id="p2">
-    <div class="step"><i>2</i> <span data-i18n="step2"></span></div>
+    <div class="step"><i>3</i> <span data-i18n="step3"></span></div>
     <div id="times"></div>
   </div>
 
   <form class="panel hidden" id="form" novalidate>
-    <div class="step"><i>3</i> <span data-i18n="step3"></span></div>
-    <div class="summary"><span data-i18n="yourSlot"></span><b id="sum"></b></div>
+    <div class="step"><i>4</i> <span data-i18n="step4"></span></div>
+    <div class="summary"><span data-i18n="yourSlot"></span><b id="sum"></b><span id="sumc"></span></div>
     <label for="name" data-i18n="name"></label>
     <input id="name" required maxlength="80" autocomplete="name" data-i18n-ph="namePh">
     <label for="phone" data-i18n="phone"></label>
     <div class="phone"><div class="cc">+91</div><input id="phone" type="tel" inputmode="numeric" required autocomplete="tel-national" placeholder="94003 18000"></div>
     <div class="hint" data-i18n="phoneHint"></div>
-    <label for="req"><span data-i18n="req"></span> <span class="hint" data-i18n="optional"></span></label>
-    <textarea id="req" rows="3" maxlength="500" data-i18n-ph="reqPh"></textarea>
+    <label for="place" data-i18n="place"></label>
+    <input id="place" required maxlength="80" autocomplete="address-level2" data-i18n-ph="placePh">
     <button class="btn" id="go" data-i18n="confirm"></button>
     <div id="out"></div>
   </form>
@@ -41,69 +47,89 @@
 <script>
 const $ = (id) => document.getElementById(id);
 const IST = 'Asia/Kolkata';
-let keyF, wdF, dayF, monF, longF, timeF, hourF;
+// Centers. days = weekdays open (0=Sun..6=Sat); null = every day. The server enforces the same rule.
+const CENTERS = [
+  {id: 'kattakada', days: null},
+  {id: 'thirumala', days: [1, 2]},
+  {id: 'poovar', days: [1, 2]},
+];
+let keyF, dayF, longF, timeF, hourF;
 function mkFmt() {
   const L = locale();
   keyF = new Intl.DateTimeFormat('en-CA', {timeZone: IST});
   hourF = new Intl.DateTimeFormat('en-GB', {hour:'2-digit', hour12:false, timeZone: IST});
-  wdF = new Intl.DateTimeFormat(L, {weekday:'short', timeZone: IST});
-  dayF = new Intl.DateTimeFormat(L, {day:'numeric', timeZone: IST});
-  monF = new Intl.DateTimeFormat(L, {month:'short', timeZone: IST});
+  dayF = new Intl.DateTimeFormat(L, {weekday:'short', day:'numeric', month:'short', timeZone: IST});
   longF = new Intl.DateTimeFormat(L, {weekday:'long', day:'numeric', month:'long', timeZone: IST});
   timeF = new Intl.DateTimeFormat(L, {hour:'numeric', minute:'2-digit', hour12:true, timeZone: IST});
 }
 mkFmt();
 const el = (t, c, txt) => { const e = document.createElement(t); if (c) e.className = c; if (txt != null) e.textContent = txt; return e; };
+const DAY = 24 * 3600 * 1000;
 
-let byDay = new Map(), selDay = null, chosen = null, done = null;
+let slots = [], center = null, selDay = null, chosen = null, done = null, loadFailed = false;
+const dayKeys = () => [keyF.format(Date.now()), keyF.format(Date.now() + DAY)];
 const slotText = (s) => `${longF.format(s.start_ts)} · ${timeF.format(s.start_ts)} (${s.duration_min} ${t('min')})`;
+const openSlots = (c, k) => slots.filter(s => s.center === c && keyF.format(s.start_ts) === k && s.left > 0);
 
-async function load(keepSel) {
-  let list = [];
-  try { list = await (await fetch('/api/slots')).json(); } catch { $('dates').replaceChildren(el('p','empty',t('loadFail'))); return; }
-  byDay = new Map();
-  for (const s of list) { const k = keyF.format(s.start_ts); if (!byDay.has(k)) byDay.set(k, []); byDay.get(k).push(s); }
-  const open = [...byDay.keys()].filter(k => byDay.get(k).some(s => s.left > 0));
-  if (!open.length) {
-    $('dates').replaceChildren(el('p','empty',t('none')));
-    $('p2').classList.add('hidden'); $('form').classList.add('hidden'); return;
-  }
-  if (!keepSel || !byDay.has(selDay)) selDay = open[0];
-  renderDates(); renderTimes();
+async function load() {
+  try { slots = await (await fetch('/api/slots')).json(); loadFailed = false; }
+  catch { loadFailed = true; slots = []; }
+  render();
 }
 
-function renderDates() {
+function render() {
+  if (done) return;
+  renderCenters();
+  const p1 = $('p1'), p2 = $('p2'), form = $('form'), nomsg = $('nomsg');
+  if (loadFailed) { p1.classList.remove('hidden'); $('dates').replaceChildren(); nomsg.className = 'notice'; nomsg.textContent = t('loadFail'); p2.classList.add('hidden'); form.classList.add('hidden'); return; }
+  if (!center) { p1.classList.add('hidden'); p2.classList.add('hidden'); form.classList.add('hidden'); return; }
+  p1.classList.remove('hidden');
+  const [today, tomorrow] = dayKeys();
+  const avail = {[today]: openSlots(center.id, today), [tomorrow]: openSlots(center.id, tomorrow)};
+  if (!avail[selDay] || !avail[selDay].length) selDay = avail[today].length ? today : avail[tomorrow].length ? tomorrow : null;
+
   const box = $('dates'); box.replaceChildren();
-  for (const [k, slots] of byDay) {
-    const free = slots.filter(s => s.left > 0).length; if (!free) continue;
-    const ts = slots[0].start_ts;
-    const b = el('button', 'date' + (k === selDay ? ' sel' : ''));
-    b.type = 'button';
-    b.append(el('small', '', wdF.format(ts)), el('b', '', dayF.format(ts)), el('small', '', monF.format(ts)));
-    b.onclick = () => { selDay = k; chosen = null; $('form').classList.add('hidden'); renderDates(); renderTimes(); $('p2').scrollIntoView({behavior:'smooth', block:'start'}); };
+  for (const [k, label] of [[today, 'today'], [tomorrow, 'tomorrow']]) {
+    const ts = k === today ? Date.now() : Date.now() + DAY;
+    const b = el('button', 'date' + (k === selDay ? ' sel' : '')); b.type = 'button'; b.disabled = !avail[k].length;
+    b.append(el('b', '', t(label)), el('small', '', dayF.format(ts)));
+    b.onclick = () => { selDay = k; chosen = null; form.classList.add('hidden'); render(); p2.scrollIntoView({behavior:'smooth', block:'start'}); };
+    box.append(b);
+  }
+  if (!selDay) {
+    nomsg.className = 'notice'; nomsg.textContent = t(center.days ? 'noSlotsCenterMT' : 'noSlotsCenter', centerLabel(center.id));
+    p2.classList.add('hidden'); form.classList.add('hidden'); chosen = null; return;
+  }
+  nomsg.className = 'hidden'; nomsg.textContent = '';
+  renderTimes(avail[selDay]);
+}
+
+function renderCenters() {
+  const box = $('centers'); box.replaceChildren();
+  for (const c of CENTERS) {
+    const b = el('button', 'center' + (center && center.id === c.id ? ' sel' : '')); b.type = 'button';
+    b.append(el('b', '', centerLabel(c.id)), el('small', '', t(c.days ? 'monTue' : 'everyDay')));
+    b.onclick = () => { center = c; selDay = null; chosen = null; $('form').classList.add('hidden'); render(); $('p1').scrollIntoView({behavior:'smooth', block:'start'}); };
     box.append(b);
   }
 }
 
-function renderTimes() {
-  const slots = byDay.get(selDay) || [];
+function renderTimes(list) {
   $('p2').classList.remove('hidden');
   const box = $('times'); box.replaceChildren();
   const parts = [['morning', h => h < 12], ['afternoon', h => h >= 12 && h < 17], ['evening', h => h >= 17]];
   for (const [label, test] of parts) {
-    const group = slots.filter(s => test(parseInt(hourF.format(s.start_ts))));
+    const group = list.filter(s => test(parseInt(hourF.format(s.start_ts))));
     if (!group.length) continue;
     box.append(el('div', 'part', t(label)));
     const grid = el('div', 'times');
     for (const s of group) {
-      const b = el('button', 'time' + (chosen && chosen.id === s.id ? ' sel' : '')); b.type = 'button'; b.disabled = s.left === 0;
+      const b = el('button', 'time' + (chosen && chosen.id === s.id ? ' sel' : '')); b.type = 'button';
       b.append(el('b', '', timeF.format(s.start_ts)));
-      if (s.left === 0) b.append(el('small', '', t('full')));
-      else b.append(el('small', s.left <= 2 && s.capacity > 1 ? 'few' : '', s.capacity === 1 ? t('available') : t('spotsLeft', s.left)));
+      b.append(el('small', s.left <= 2 && s.capacity > 1 ? 'few' : '', s.capacity === 1 ? t('available') : t('spotsLeft', s.left)));
       if (s.note) b.append(el('small', '', s.note));
       b.onclick = () => {
-        chosen = s; renderTimes();
-        $('sum').textContent = slotText(s);
+        chosen = s; renderTimes(list); showSummary();
         $('form').classList.remove('hidden'); $('form').scrollIntoView({behavior:'smooth', block:'start'});
         setTimeout(() => $('name')?.focus({preventScroll:true}), 400);
       };
@@ -112,22 +138,25 @@ function renderTimes() {
     box.append(grid);
   }
 }
+function showSummary() {
+  if (!chosen) return;
+  $('sum').textContent = slotText(chosen);
+  const c = $('sumc'); c.textContent = '📍 ' + centerLabel(chosen.center);
+}
 
 function renderDone() {
   const f = $('form'); f.replaceChildren();
   const box = el('div', 'done');
   const again = el('button', 'btn', t('another')); again.type = 'button'; again.onclick = () => location.reload();
   const manage = el('a', 'btn ghost', t('viewCancel')); manage.href = done.manageUrl;
-  box.append(el('div', 'tick', '✓'), el('h2', '', t('doneTitle')), el('p', '', slotText(done.slot)), el('div', 'wa', t('doneWa')), manage, again);
+  box.append(el('div', 'tick', '✓'), el('h2', '', t('doneTitle')), el('p', '', '📍 ' + centerLabel(done.slot.center)), el('p', '', slotText(done.slot)), el('div', 'wa', t('doneWa')), manage, again);
   f.append(box);
 }
 
-// re-render on language change
 window.onLang = () => {
   mkFmt();
   if (done) { renderDone(); return; }
-  if (byDay.size) { renderDates(); renderTimes(); if (chosen) $('sum').textContent = slotText(chosen); }
-  else load();
+  render(); showSummary();
 };
 
 $('form').onsubmit = async (e) => {
@@ -135,17 +164,18 @@ $('form').onsubmit = async (e) => {
   const out = $('out'); out.className = ''; out.textContent = '';
   if (!$('name').value.trim()) { out.className = 'msg err'; out.textContent = t('errName'); $('name').focus(); return; }
   if ($('phone').value.replace(/\D/g, '').length < 10) { out.className = 'msg err'; out.textContent = t('errPhone'); $('phone').focus(); return; }
+  if (!$('place').value.trim()) { out.className = 'msg err'; out.textContent = t('errPlace'); $('place').focus(); return; }
   $('go').disabled = true; $('go').textContent = t('booking');
   try {
     const r = await fetch('/api/book', {method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({slotId: chosen.id, name: $('name').value, phone: $('phone').value, request: $('req').value, lang: LANG})});
+      body: JSON.stringify({slotId: chosen.id, name: $('name').value, phone: $('phone').value, place: $('place').value, lang: LANG})});
     const d = await r.json();
     if (!r.ok) throw new Error(d.error || t('errGeneric'));
-    $('p1').classList.add('hidden'); $('p2').classList.add('hidden');
+    for (const id of ['p0', 'p1', 'p2']) $(id).classList.add('hidden');
     done = {manageUrl: d.manageUrl, slot: chosen}; renderDone();
     window.scrollTo({top: 0, behavior: 'smooth'});
   } catch (err) {
-    out.className = 'msg err'; out.textContent = err.message; $('go').disabled = false; $('go').textContent = t('confirm'); chosen = null; $('form').classList.add('hidden'); load(true);
+    out.className = 'msg err'; out.textContent = err.message; $('go').disabled = false; $('go').textContent = t('confirm'); chosen = null; $('form').classList.add('hidden'); load();
   }
 };
 load();
