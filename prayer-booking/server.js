@@ -148,10 +148,12 @@ app.post('/api/book', limit(10, 3600 * 1000), async (req, res) => {
   }
 
   const cancelUrl = `${BASE_URL}/manage.html?t=${token}`;
-  sendWhatsApp(phone, T[lang].confirm(name, fmt(slot, lang), slot.duration_min, cancelUrl, centerName(slot.center, lang)));
+  sendWhatsApp(phone, T[lang].confirm(name, fmt(slot, lang), slot.duration_min, cancelUrl, centerName(slot.center, lang)),
+    { name: 'prayer_confirmed', lang, params: [name, centerName(slot.center, lang), fmt(slot, lang), slot.duration_min, cancelUrl] });
   if (ADMIN_WHATSAPP) {
     sendWhatsApp(ADMIN_WHATSAPP,
-      `🆕 New prayer appointment\n${name} (+${phone})\n🏠 ${place}\n📍 ${centerName(slot.center)}\n📅 ${fmt(slot)}`);
+      `🆕 New prayer appointment\n${name} (+${phone})\n🏠 ${place}\n📍 ${centerName(slot.center)}\n📅 ${fmt(slot)}`,
+      { name: 'admin_new_booking', lang: 'en', params: [name, '+' + phone, place, centerName(slot.center), fmt(slot)] });
   }
   res.json({ ok: true, bookingId, token, manageUrl: cancelUrl, when: fmt(slot, lang) });
 });
@@ -169,8 +171,10 @@ app.post('/api/booking/:token/cancel', limit(10, 3600 * 1000), async (req, res) 
   if (b.status === 'cancelled') return res.json({ ok: true });
   if (b.start_ts <= Date.now()) return res.status(400).json({ error: 'This slot has already passed.' });
   db.prepare(`UPDATE bookings SET status='cancelled' WHERE id=?`).run(b.id);
-  sendWhatsApp(b.phone, T[pickLang(b.lang)].cancelled(fmt(b, pickLang(b.lang))));
-  if (ADMIN_WHATSAPP) sendWhatsApp(ADMIN_WHATSAPP, `❌ Booking cancelled: ${b.name} (+${b.phone}) – ${fmt(b)}`);
+  sendWhatsApp(b.phone, T[pickLang(b.lang)].cancelled(fmt(b, pickLang(b.lang))),
+    { name: 'prayer_cancelled', lang: pickLang(b.lang), params: [fmt(b, pickLang(b.lang))] });
+  if (ADMIN_WHATSAPP) sendWhatsApp(ADMIN_WHATSAPP, `❌ Booking cancelled: ${b.name} (+${b.phone}) – ${fmt(b)}`,
+    { name: 'admin_cancelled', lang: 'en', params: [b.name, '+' + b.phone, fmt(b)] });
   res.json({ ok: true });
 });
 
@@ -224,7 +228,8 @@ app.delete('/api/admin/slots/:id', requireAdmin, async (req, res) => {
   if (s.start_ts > Date.now()) {
     for (const p of people) {
       const l = pickLang(p.lang);
-      sendWhatsApp(p.phone, T[l].churchCancel(p.name, fmt(s, l), BASE_URL));
+      sendWhatsApp(p.phone, T[l].churchCancel(p.name, fmt(s, l), BASE_URL),
+        { name: 'prayer_church_cancelled', lang: l, params: [p.name, fmt(s, l), BASE_URL] });
     }
   }
   res.json({ ok: true, notified: people.length });
@@ -235,7 +240,8 @@ app.delete('/api/admin/bookings/:id', requireAdmin, (req, res) => {
   if (!b) return res.status(404).json({ error: 'Booking not found.' });
   db.prepare(`UPDATE bookings SET status='cancelled' WHERE id=?`).run(b.id);
   const l = pickLang(b.lang);
-  sendWhatsApp(b.phone, T[l].churchCancel(b.name, fmt(b, l), BASE_URL));
+  sendWhatsApp(b.phone, T[l].churchCancel(b.name, fmt(b, l), BASE_URL),
+    { name: 'prayer_church_cancelled', lang: l, params: [b.name, fmt(b, l), BASE_URL] });
   res.json({ ok: true });
 });
 
@@ -249,7 +255,8 @@ setInterval(() => {
   for (const b of due) {
     db.prepare(`UPDATE bookings SET reminded=1 WHERE id=?`).run(b.id);
     const l = pickLang(b.lang);
-    sendWhatsApp(b.phone, T[l].reminder(b.name, fmt(b, l), centerName(b.center, l)));
+    sendWhatsApp(b.phone, T[l].reminder(b.name, fmt(b, l), centerName(b.center, l)),
+      { name: 'prayer_reminder', lang: l, params: [b.name, centerName(b.center, l), fmt(b, l)] });
   }
 }, 5 * 60 * 1000).unref();
 

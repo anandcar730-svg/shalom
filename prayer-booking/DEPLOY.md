@@ -122,18 +122,9 @@ Certbot edits the Nginx config to redirect HTTP→HTTPS and sets up auto-renewal
    - **Permanent token**: Business Settings → System Users → create a system user → assign it to
      your WhatsApp app with `whatsapp_business_messaging` permission → **Generate token** (set
      expiration to "Never"). Put this in `META_ACCESS_TOKEN`.
-6. **Message templates** (required for reminders / church-cancellation messages, since those go
-   out more than 24h after the user last messaged you): WhatsApp Manager → **Message Templates** →
-   create templates like:
-   - `prayer_confirmation` (body: "Your prayer slot is confirmed for {{1}}. Manage it: {{2}}")
-   - `prayer_reminder` (body: "Reminder: your prayer slot is {{1}}. God bless you!")
-   - `prayer_cancelled_by_church` (body: "We're sorry, your slot on {{1}} was cancelled. Please rebook: {{2}}")
-
-   Submit for approval (usually minutes to a few hours). Once approved, outbound messages outside
-   the 24h session window must use `type: "template"` with these names instead of `type: "text"` —
-   `whatsapp.js` in this repo currently only sends plain text, so update `sendMeta()` there to send
-   a template payload once you have template names/approval; happy to make that change once you
-   confirm the approved template names.
+6. **Message templates**: see `WHATSAPP_TEMPLATES.md` for the exact names and text to create. Once all are
+   approved, add `META_USE_TEMPLATES=true` to `.env` and restart. Until then, set it to `false` and
+   only people who messaged your number in the last 24 hours receive messages.
 
 ## 8. Verify end to end
 1. Open `https://pray.shalomchurch.co.in/admin.html`, log in, add a slot for a few minutes from now.

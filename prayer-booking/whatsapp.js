@@ -25,11 +25,34 @@ async function sendTwilio(to, text) {
   if (!r.ok) throw new Error(`Twilio ${r.status}: ${await r.text()}`);
 }
 
+// Business-initiated messages must be pre-approved templates (see WHATSAPP_TEMPLATES.md).
+// With META_USE_TEMPLATES=true the Meta provider sends `tpl` = { name, lang, params: [...] };
+// otherwise (or for Twilio / dry-run) the plain `text` is used.
+const useTemplates = String(process.env.META_USE_TEMPLATES || '').toLowerCase() === 'true';
+
+async function sendMetaTemplate(to, tpl) {
+  const { META_PHONE_NUMBER_ID: id, META_ACCESS_TOKEN: token } = process.env;
+  const clean = (v) => String(v).replace(/[\n\r\t]+/g, ' ').replace(/ {4,}/g, '   ').trim() || '-';
+  const r = await fetch(`https://graph.facebook.com/v21.0/${id}/messages`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      messaging_product: 'whatsapp', to, type: 'template',
+      template: {
+        name: tpl.name, language: { code: tpl.lang || 'en' },
+        components: [{ type: 'body', parameters: (tpl.params || []).map((p) => ({ type: 'text', text: clean(p) })) }],
+      },
+    }),
+  });
+  if (!r.ok) throw new Error(`Meta template ${tpl.name}/${tpl.lang} ${r.status}: ${await r.text()}`);
+}
+
 // Never throws: a failed message must not break a booking.
-async function sendWhatsApp(to, text) {
+async function sendWhatsApp(to, text, tpl) {
   if (!to) return false;
   try {
-    if (provider === 'meta') await sendMeta(to, text);
+    if (provider === 'meta' && useTemplates && tpl) await sendMetaTemplate(to, tpl);
+    else if (provider === 'meta') await sendMeta(to, text);
     else if (provider === 'twilio') await sendTwilio(to, text);
     else { console.log(`[whatsapp:dry-run] -> ${to}\n${text}\n`); return false; }
     return true;
