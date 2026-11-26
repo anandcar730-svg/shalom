@@ -76,3 +76,28 @@ html[lang="ml"] .hero h1,html[lang="ml"] .page h1{line-height:1.45}
 header strong{white-space:nowrap}
 header a.back{white-space:nowrap}
 @media(max-width:560px){header a.back.opt{display:none}.hright{gap:8px}}
+/* admin */
+.tabs{display:flex;gap:6px;background:var(--soft);border-radius:14px;padding:4px;margin-bottom:18px}
+.tabs button{flex:1;border:0;background:transparent;color:var(--brand-d);font:inherit;font-weight:600;font-size:14px;padding:10px 8px;border-radius:11px;cursor:pointer}
+.tabs button.on{background:var(--card);box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.stat b{display:block;font-size:28px;line-height:1.2;color:var(--brand-d);font-variant-numeric:tabular-nums}
+.stat span{font-size:13px;color:var(--muted)}
+.seg{display:inline-flex;gap:4px;background:var(--soft);border-radius:12px;padding:3px;margin-bottom:6px}
+.seg button{border:0;background:transparent;color:var(--brand-d);font:inherit;font-size:13px;font-weight:600;padding:6px 16px;border-radius:9px;cursor:pointer}
+.seg button.on{background:var(--brand);color:#fff}
+.dayh{font-weight:600;margin:22px 0 8px;color:var(--brand-d)}
+.bkcard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:6px 18px 8px;margin-bottom:12px}
+.bkcard .slothead{padding:12px 0 6px}
+.time-big{font-size:18px;font-weight:600}
+.reqtxt{background:var(--soft);border-radius:8px;padding:6px 10px;margin-top:6px;font-size:13px;color:var(--ink)}
+.bk .who{min-width:0;overflow-wrap:anywhere}
+.bk .who b{font-weight:600}
+.btn.sm.ghost{padding:5px 12px}
+header{flex-wrap:wrap;gap:8px 12px}
+.stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.stat{padding:12px}
+.stat b{font-size:26px}
+.stat span{display:block;font-size:12.5px;line-height:1.35}
+html{overflow-x:hidden}

@@ -1,0 +1,26 @@
+Object.assign(I18N.en, {
+  aTitle: 'Prayer Slots – Admin', aView: 'View public page', aLogin: 'Admin login', aPw: 'Password', aLoginBtn: 'Log in', aLogout: 'Log out',
+  aWrongPw: 'Wrong password.', aExpired: 'Session expired. Please log in again.',
+  tabBookings: 'Bookings', tabSlots: 'Manage slots',
+  sUpcoming: 'Upcoming', sPast: 'Past', sToday: 'Today', sTotal: 'Upcoming bookings', sSlotsBooked: 'Slots with bookings',
+  noBookings: 'No bookings yet.', noPast: 'No past bookings.', people: (n) => `${n} ${n === 1 ? 'person' : 'people'}`,
+  addSlots: 'Add slots', date: 'Date', times: 'Times (comma separated, 24h)', timesPh: '06:00, 07:00, 18:30',
+  dur: 'Minutes per slot', cap: 'People per slot', weeks: 'Repeat weekly for (weeks)', note: 'Note (optional)', notePh: 'e.g. Pastor John', addBtn: 'Add slots',
+  added: (n) => `${n} slot(s) added.`, slotsList: 'All slots', noSlots: 'No slots yet. Add some above.',
+  booked: 'booked', minShort: 'min', delSlot: 'Delete slot', cancel: 'Cancel',
+  confirmDelSlot: 'Delete this slot?', confirmDelSlotN: (n) => `Delete this slot? ${n} booked person(s) will be notified on WhatsApp.`,
+  confirmCancel: 'Cancel this booking and notify them?', chat: 'Chat on WhatsApp', yes: 'Yes', no: 'No', phoneLbl: 'WhatsApp',
+});
+Object.assign(I18N.ml, {
+  aTitle: 'പ്രാർത്ഥനാ അഡ്മിൻ', aView: 'പൊതു പേജ് കാണുക', aLogin: 'അഡ്മിൻ ലോഗിൻ', aPw: 'പാസ്‌വേഡ്', aLoginBtn: 'ലോഗിൻ', aLogout: 'ലോഗൗട്ട്',
+  aWrongPw: 'പാസ്‌വേഡ് തെറ്റാണ്.', aExpired: 'സെഷൻ കഴിഞ്ഞു. വീണ്ടും ലോഗിൻ ചെയ്യുക.',
+  tabBookings: 'ബുക്കിംഗുകൾ', tabSlots: 'സമയങ്ങൾ നിയന്ത്രിക്കുക',
+  sUpcoming: 'വരാനിരിക്കുന്നവ', sPast: 'കഴിഞ്ഞവ', sToday: 'ഇന്ന്', sTotal: 'വരാനിരിക്കുന്ന ബുക്കിംഗുകൾ', sSlotsBooked: 'ബുക്കിംഗുള്ള സമയങ്ങൾ',
+  noBookings: 'ഇതുവരെ ബുക്കിംഗുകളില്ല.', noPast: 'കഴിഞ്ഞ ബുക്കിംഗുകളില്ല.', people: (n) => `${n} പേർ`,
+  addSlots: 'സമയങ്ങൾ ചേർക്കുക', date: 'തീയതി', times: 'സമയങ്ങൾ (കോമ ഇട്ട് വേർതിരിക്കുക, 24 മണിക്കൂർ)', timesPh: '06:00, 07:00, 18:30',
+  dur: 'ഓരോ സമയത്തിന്റെയും ദൈർഘ്യം (മിനിറ്റ്)', cap: 'ഓരോ സമയത്തും എത്ര പേർ', weeks: 'ആഴ്ചതോറും ആവർത്തിക്കുക (ആഴ്ചകൾ)', note: 'കുറിപ്പ് (ഓപ്ഷണൽ)', notePh: 'ഉദാ: പാസ്റ്റർ ജോൺ', addBtn: 'സമയങ്ങൾ ചേർക്കുക',
+  added: (n) => `${n} സമയം ചേർത്തു.`, slotsList: 'എല്ലാ സമയങ്ങളും', noSlots: 'ഇതുവരെ സമയങ്ങളില്ല. മുകളിൽ ചേർക്കുക.',
+  booked: 'ബുക്ക് ചെയ്തു', minShort: 'മിനിറ്റ്', delSlot: 'സമയം ഒഴിവാക്കുക', cancel: 'റദ്ദാക്കുക',
+  confirmDelSlot: 'ഈ സമയം ഒഴിവാക്കണോ?', confirmDelSlotN: (n) => `ഈ സമയം ഒഴിവാക്കണോ? ബുക്ക് ചെയ്ത ${n} പേർക്ക് വാട്സ്ആപ്പിൽ അറിയിപ്പ് പോകും.`,
+  confirmCancel: 'ഈ ബുക്കിംഗ് റദ്ദാക്കി അവരെ അറിയിക്കണോ?', chat: 'വാട്സ്ആപ്പിൽ സംസാരിക്കുക', yes: 'അതെ', no: 'അല്ല', phoneLbl: 'വാട്സ്ആപ്പ്',
+});
