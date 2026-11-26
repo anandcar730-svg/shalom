@@ -36,6 +36,11 @@ with your provider and send those instead; the plain-text sending here works for
 users who recently messaged your number.
 
 ## Deploying
-The main church site is static (GitHub Pages), so this app needs a Node host such as Render,
-Railway or Fly.io (mount a persistent disk for `data/`). Then link to it from the website,
-e.g. `<a href="https://your-app-url">Book a Prayer</a>`, and set `BASE_URL` to that address.
+The main church site is static (GitHub Pages), so this app runs as its own Node service.
+See **[DEPLOY.md](./DEPLOY.md)** for the full Oracle Cloud + Nginx + HTTPS + Meta WhatsApp
+Cloud API walkthrough. `index.html` already links "Book a Prayer" to `https://pray.shalomchurch.co.in`
+in the navbar, hero and prayer-request section — update those if your subdomain differs.
+
+## Seeing bookings
+Admins see every booking (name, WhatsApp number, prayer request) per slot on `/admin.html`,
+with a tap-to-chat WhatsApp link per person. No separate dashboard needed.
