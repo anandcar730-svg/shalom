@@ -49,7 +49,7 @@ const $ = (id) => document.getElementById(id);
 const IST = 'Asia/Kolkata';
 // Centers. days = weekdays open (0=Sun..6=Sat); null = every day. The server enforces the same rule.
 const CENTERS = [
-  {id: 'kattakada', days: null, note: 'everyDay'},
+  {id: 'kattakada', days: [1, 2, 4, 5], note: 'everyDay'},  // Mon, Tue, Thu, Fri (note text key kept as everyDay)
   {id: 'thirumala', days: [2, 6], note: 'monTue'},   // Tuesday, Saturday (key name kept; text says Tue/Sat)
   {id: 'poovar', days: [2], note: 'tueOnly'},        // Tuesday
 ];

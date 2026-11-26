@@ -10,7 +10,7 @@ Object.assign(I18N.en, {
   booked: 'booked', minShort: 'min', delSlot: 'Delete slot', cancel: 'Cancel',
   confirmDelSlot: 'Delete this slot?', confirmDelSlotN: (n) => `Delete this slot? ${n} booked person(s) will be notified on WhatsApp.`,
   confirmCancel: 'Cancel this booking and notify them?', chat: 'Chat on WhatsApp', yes: 'Yes', no: 'No', phoneLbl: 'WhatsApp',
-  center: 'Prayer center', centerHint: 'Thirumala: Tuesdays and Saturdays only. Poovar: Tuesdays only. Visitors can book from the day before.', errMonTue: 'Thirumala slots can only be added on Tuesdays or Saturdays, and Poovar slots only on Tuesdays. Pick a matching date.',
+  center: 'Prayer center', centerHint: 'Kattakada: Mon, Tue, Thu, Fri. Thirumala: Tue, Sat. Poovar: Tue. Visitors can book from the day before.', errMonTue: 'This center is not open on that day. Kattakada: Monday, Tuesday, Thursday, Friday. Thirumala: Tuesday, Saturday. Poovar: Tuesday only.',
   allCenters: 'All centers', placeLbl: 'Place',
 });
 Object.assign(I18N.ml, {
@@ -25,6 +25,6 @@ Object.assign(I18N.ml, {
   booked: 'ബുക്ക് ചെയ്തു', minShort: 'മിനിറ്റ്', delSlot: 'സമയം ഒഴിവാക്കുക', cancel: 'റദ്ദാക്കുക',
   confirmDelSlot: 'ഈ സമയം ഒഴിവാക്കണോ?', confirmDelSlotN: (n) => `ഈ സമയം ഒഴിവാക്കണോ? ബുക്ക് ചെയ്ത ${n} പേർക്ക് വാട്സ്ആപ്പിൽ അറിയിപ്പ് പോകും.`,
   confirmCancel: 'ഈ ബുക്കിംഗ് റദ്ദാക്കി അവരെ അറിയിക്കണോ?', chat: 'വാട്സ്ആപ്പിൽ സംസാരിക്കുക', yes: 'അതെ', no: 'അല്ല', phoneLbl: 'വാട്സ്ആപ്പ്',
-  center: 'പ്രാർത്ഥനാ കേന്ദ്രം', centerHint: 'തിരുമല: ചൊവ്വ, ശനി മാത്രം. പൂവാർ: ചൊവ്വ മാത്രം. തലേദിവസം മുതൽ ബുക്ക് ചെയ്യാം.', errMonTue: 'തിരുമലയുടെ സമയങ്ങൾ ചൊവ്വ അല്ലെങ്കിൽ ശനി ദിവസങ്ങളിലും, പൂവാറിന്റേത് ചൊവ്വാഴ്ചയും മാത്രമേ ചേർക്കാനാകൂ. അനുയോജ്യമായ തീയതി തിരഞ്ഞെടുക്കുക.',
+  center: 'പ്രാർത്ഥനാ കേന്ദ്രം', centerHint: 'കാട്ടാക്കട: തിങ്കൾ, ചൊവ്വ, വ്യാഴം, വെള്ളി. തിരുമല: ചൊവ്വ, ശനി. പൂവാർ: ചൊവ്വ. തലേദിവസം മുതൽ ബുക്ക് ചെയ്യാം.', errMonTue: 'ആ ദിവസം ഈ കേന്ദ്രം തുറക്കില്ല. കാട്ടാക്കട: തിങ്കൾ, ചൊവ്വ, വ്യാഴം, വെള്ളി. തിരുമല: ചൊവ്വ, ശനി. പൂവാർ: ചൊവ്വ മാത്രം.',
   allCenters: 'എല്ലാ കേന്ദ്രങ്ങളും', placeLbl: 'സ്ഥലം',
 });

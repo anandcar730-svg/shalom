@@ -18,10 +18,10 @@ Requires Node 22.13+ (uses the built-in `node:sqlite`, no database to install).
 ## Appointment rules
 - Visitors book a **personal prayer appointment** with name, WhatsApp number and place (no prayer-request field).
 - Only **today and tomorrow** can be booked (India time). Anything later is hidden and refused by the server.
-- Three centers: **Kattakada Shalom** (any day), **Thirumala Shalom** (Tuesdays and Saturdays only) and
-  **Poovar Shalom** (Tuesdays only). Because only today and tomorrow can be booked, Thirumala and Poovar open
+- Three centers: **Kattakada Shalom** (Mondays, Tuesdays, Thursdays and Fridays), **Thirumala Shalom** (Tuesdays and
+  Saturdays) and **Poovar Shalom** (Tuesdays only). Because only today and tomorrow can be booked, each center opens
   for booking on the day before and on the day itself, and not otherwise.
-  The admin cannot add slots for those centers on other weekdays, and the server refuses such bookings even if a slot exists.
+  The admin cannot add slots on other weekdays, and the server refuses such bookings even if a slot exists.
   Edit the `CENTERS` table in `server.js` (and `CENTERS` in `public/index.html`) to change names or days.
 - Reminders go out 2 hours before the appointment, only for bookings made 3+ hours ahead.
 - Existing slots from before this change are treated as Kattakada.

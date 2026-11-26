@@ -71,12 +71,12 @@ const fmt = (s, lang = 'en') =>
   });
 // Prayer centers. `days` = weekdays when the center is open for booking (0=Sun..6=Sat); null = every day.
 const CENTERS = {
-  kattakada: { en: 'Kattakada Shalom', ml: 'കാട്ടാക്കട ഷാലോം', days: null },
+  kattakada: { en: 'Kattakada Shalom', ml: 'കാട്ടാക്കട ഷാലോം', days: [1, 2, 4, 5] }, // Mon, Tue, Thu, Fri
   thirumala: { en: 'Thirumala Shalom', ml: 'തിരുമല ഷാലോം', days: [2, 6] }, // Tuesday, Saturday
   poovar: { en: 'Poovar Shalom', ml: 'പൂവാർ ഷാലോം', days: [2] },            // Tuesday
 };
 const DAY_NAMES = ['Sundays', 'Mondays', 'Tuesdays', 'Wednesdays', 'Thursdays', 'Fridays', 'Saturdays'];
-const centerDays = (c) => (CENTERS[c].days || []).map((d) => DAY_NAMES[d]).join(' and ');
+const centerDays = (c) => { const n = (CENTERS[c].days || []).map((d) => DAY_NAMES[d]); return n.length < 2 ? n.join('') : n.slice(0, -1).join(', ') + ' and ' + n[n.length - 1]; };
 const centerName = (c, lang = 'en') => (CENTERS[c] || CENTERS.kattakada)[lang];
 const weekdayOf = (date) => new Date(`${date}T12:00:00Z`).getUTCDay(); // weekday of a calendar date
 const centerOpenOn = (c, date) => !!CENTERS[c] && (!CENTERS[c].days || CENTERS[c].days.includes(weekdayOf(date)));
