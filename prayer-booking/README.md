@@ -25,13 +25,13 @@ Requires Node 22.13+ (uses the built-in `node:sqlite`, no database to install).
 - Existing slots from before this change are treated as Kattakada.
 
 ## How it works
-- **Admin** adds slots (date, times, minutes, people per slot, optional weekly repeat), sees who booked
-  (with a tap-to-chat WhatsApp link and their prayer request), cancels a booking, or deletes a slot
-  (booked people are notified automatically).
-- **Users** pick an open slot, enter name + WhatsApp number (+ optional prayer request).
+- **Admin** picks a center and adds slots (date, times, minutes, people per slot, optional weekly repeat).
+  The Bookings tab shows who booked (name, tap-to-chat WhatsApp number, place), filterable by center.
+  Admin can cancel a booking or delete a slot; booked people are notified automatically.
+- **Visitors** choose a center, then today or tomorrow, then a time, and enter name, WhatsApp number and place.
   Seats are checked inside a database transaction, so a slot can never be overbooked.
-- **WhatsApp messages**: booking confirmation (with cancel link), admin alert for each new/cancelled
-  booking, cancellation by church, and a reminder within 24h of the slot.
+- **WhatsApp messages**: confirmation (with cancel link), admin alert for each new or cancelled booking,
+  cancellation by the church, and a reminder 2 hours before.
 
 ## Turn on real WhatsApp sending
 Without a provider, messages are only printed in the server log (dry run). Pick one in `.env`:
