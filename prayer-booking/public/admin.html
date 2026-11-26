@@ -9,7 +9,7 @@
 </head>
 <body>
 <header><strong>Prayer Slots – Admin</strong><a class="back" href="/">View public page</a></header>
-<main>
+<main class="page" style="margin-top:0;max-width:820px">
   <form id="login" class="card">
     <h2 style="margin-top:0">Admin login</h2>
     <label for="pw">Password</label><input id="pw" type="password" required autocomplete="current-password">
@@ -74,7 +74,9 @@ $('add').onsubmit = async (e) => {
 };
 
 async function refresh() {
-  const slots = await api('/api/admin/slots'); const box = $('list'); box.textContent = '';
+  let slots = await api('/api/admin/slots'); const box = $('list'); box.textContent = '';
+  // upcoming first (soonest at top), then past (most recent first)
+  slots = [...slots.filter(s => !s.past).sort((a, b) => a.start_ts - b.start_ts), ...slots.filter(s => s.past)];
   if (!slots.length) { box.innerHTML = '<p class="empty">No slots yet. Add some above.</p>'; return; }
   for (const s of slots) {
     const c = document.createElement('div'); c.className = 'card'; c.style.opacity = s.past ? .55 : 1;

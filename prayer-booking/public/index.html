@@ -2,77 +2,132 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Book a Prayer Slot – Shalom Church</title>
+<title>Book a Prayer – Shalom Church</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header><strong>Shalom Church</strong><a class="back" href="/">← Back to website</a></header>
+<header><strong>Shalom Church</strong><a class="back" href="https://www.shalomchurch.co.in">← Back to website</a></header>
+<section class="hero">
+  <h1>🙏 Book a Personal Prayer</h1>
+  <p>Pick a day and time that suits you. We'll confirm on WhatsApp.</p>
+</section>
 <main>
-  <h1>Book a Personal Prayer 🙏</h1>
-  <p class="sub">Choose an available time below. You'll get a confirmation and reminder on WhatsApp.</p>
+  <div class="panel" id="p1">
+    <div class="step"><i>1</i> Choose a day</div>
+    <div id="dates" class="dates"><p class="empty">Loading…</p></div>
+  </div>
 
-  <div id="slots"><p class="empty">Loading available slots…</p></div>
+  <div class="panel hidden" id="p2">
+    <div class="step"><i>2</i> Choose a time</div>
+    <div id="times"></div>
+  </div>
 
-  <form id="form" class="card hidden">
-    <h2 style="margin-top:0">Your details</h2>
-    <p id="chosen" class="msg ok" style="margin-top:0"></p>
-    <div class="row">
-      <div><label for="name">Name</label><input id="name" required maxlength="80" autocomplete="name"></div>
-      <div><label for="phone">WhatsApp number</label><input id="phone" type="tel" required placeholder="e.g. 94003 28000" autocomplete="tel"></div>
-    </div>
-    <label for="req">Prayer request (optional)</label>
+  <form class="panel hidden" id="form" novalidate>
+    <div class="step"><i>3</i> Your details</div>
+    <div class="summary"><span>Your prayer slot</span><b id="sum"></b></div>
+    <label for="name">Your name</label>
+    <input id="name" required maxlength="80" autocomplete="name" placeholder="e.g. Mary Thomas">
+    <label for="phone">WhatsApp number</label>
+    <div class="phone"><div class="cc">+91</div><input id="phone" type="tel" inputmode="numeric" required autocomplete="tel-national" placeholder="94003 18000"></div>
+    <div class="hint">We'll send your confirmation and a reminder to this number.</div>
+    <label for="req">Prayer request <span class="hint">(optional)</span></label>
     <textarea id="req" rows="3" maxlength="500" placeholder="Share what you'd like us to pray for"></textarea>
-    <button class="btn" id="go">Confirm booking</button>
+    <button class="btn" id="go">Confirm my booking</button>
     <div id="out"></div>
   </form>
 </main>
 <script>
-let chosen = null;
 const $ = (id) => document.getElementById(id);
-const dayFmt = new Intl.DateTimeFormat('en-IN', {weekday:'long', day:'numeric', month:'long', timeZone:'Asia/Kolkata'});
-const timeFmt = new Intl.DateTimeFormat('en-IN', {hour:'numeric', minute:'2-digit', hour12:true, timeZone:'Asia/Kolkata'});
+const IST = 'Asia/Kolkata';
+const keyF = new Intl.DateTimeFormat('en-CA', {timeZone: IST});
+const wdF = new Intl.DateTimeFormat('en-IN', {weekday:'short', timeZone: IST});
+const dayF = new Intl.DateTimeFormat('en-IN', {day:'numeric', timeZone: IST});
+const monF = new Intl.DateTimeFormat('en-IN', {month:'short', timeZone: IST});
+const longF = new Intl.DateTimeFormat('en-IN', {weekday:'long', day:'numeric', month:'long', timeZone: IST});
+const timeF = new Intl.DateTimeFormat('en-IN', {hour:'numeric', minute:'2-digit', hour12:true, timeZone: IST});
+const hourF = new Intl.DateTimeFormat('en-GB', {hour:'2-digit', hour12:false, timeZone: IST});
+const el = (t, c, txt) => { const e = document.createElement(t); if (c) e.className = c; if (txt != null) e.textContent = txt; return e; };
 
-async function load() {
-  const list = await (await fetch('/api/slots')).json();
-  const box = $('slots'); box.textContent = '';
-  if (!list.length) { box.innerHTML = '<p class="empty">No slots are open right now. Please check back soon.</p>'; return; }
-  let lastDay = '', grid;
-  for (const s of list) {
-    const day = dayFmt.format(s.start_ts);
-    if (day !== lastDay) {
-      const h = document.createElement('div'); h.className = 'day'; h.textContent = day; box.append(h);
-      grid = document.createElement('div'); grid.className = 'grid'; box.append(grid); lastDay = day;
+let byDay = new Map(), selDay = null, chosen = null;
+
+async function load(keepSel) {
+  let list = [];
+  try { list = await (await fetch('/api/slots')).json(); } catch { $('dates').replaceChildren(el('p','empty','Could not load slots. Please refresh.')); return; }
+  byDay = new Map();
+  for (const s of list) { const k = keyF.format(s.start_ts); if (!byDay.has(k)) byDay.set(k, []); byDay.get(k).push(s); }
+  const open = [...byDay.keys()].filter(k => byDay.get(k).some(s => s.left > 0));
+  if (!open.length) {
+    $('dates').replaceChildren(el('p','empty','No slots are open right now. Please check back soon.'));
+    $('p2').classList.add('hidden'); $('form').classList.add('hidden'); return;
+  }
+  if (!keepSel || !byDay.has(selDay)) selDay = open[0];
+  renderDates(); renderTimes();
+}
+
+function renderDates() {
+  const box = $('dates'); box.replaceChildren();
+  for (const [k, slots] of byDay) {
+    const free = slots.filter(s => s.left > 0).length; if (!free) continue;
+    const t = slots[0].start_ts;
+    const b = el('button', 'date' + (k === selDay ? ' sel' : ''));
+    b.type = 'button';
+    b.append(el('small', '', wdF.format(t)), el('b', '', dayF.format(t)), el('small', '', monF.format(t)));
+    b.onclick = () => { selDay = k; chosen = null; $('form').classList.add('hidden'); renderDates(); renderTimes(); $('p2').scrollIntoView({behavior:'smooth', block:'start'}); };
+    box.append(b);
+  }
+}
+
+function renderTimes() {
+  const slots = byDay.get(selDay) || [];
+  $('p2').classList.remove('hidden');
+  const box = $('times'); box.replaceChildren();
+  const parts = [['Morning', h => h < 12], ['Afternoon', h => h >= 12 && h < 17], ['Evening', h => h >= 17]];
+  for (const [label, test] of parts) {
+    const group = slots.filter(s => test(parseInt(hourF.format(s.start_ts))));
+    if (!group.length) continue;
+    box.append(el('div', 'part', label));
+    const grid = el('div', 'times');
+    for (const s of group) {
+      const b = el('button', 'time' + (chosen && chosen.id === s.id ? ' sel' : '')); b.type = 'button'; b.disabled = s.left === 0;
+      b.append(el('b', '', timeF.format(s.start_ts)));
+      if (s.left === 0) b.append(el('small', '', 'Full'));
+      else b.append(el('small', s.left <= 2 && s.capacity > 1 ? 'few' : '', s.capacity === 1 ? 'Available' : `${s.left} spot${s.left > 1 ? 's' : ''} left`));
+      if (s.note) b.append(el('small', '', s.note));
+      b.onclick = () => {
+        chosen = s; renderTimes();
+        $('sum').textContent = `${longF.format(s.start_ts)} · ${timeF.format(s.start_ts)} (${s.duration_min} min)`;
+        $('form').classList.remove('hidden'); $('form').scrollIntoView({behavior:'smooth', block:'start'});
+        setTimeout(() => $('name').focus({preventScroll:true}), 400);
+      };
+      grid.append(b);
     }
-    const b = document.createElement('button');
-    b.className = 'slot'; b.disabled = s.left === 0;
-    const t = document.createElement('b'); t.textContent = timeFmt.format(s.start_ts);
-    const m = document.createElement('small');
-    m.textContent = s.left === 0 ? 'Full' : `${s.duration_min} min · ${s.left} left`;
-    b.append(t, m);
-    if (s.note) { const n = document.createElement('small'); n.textContent = s.note; b.append(n); }
-    b.onclick = () => {
-      chosen = s; document.querySelectorAll('.slot').forEach(x => x.classList.remove('sel')); b.classList.add('sel');
-      $('chosen').textContent = `Selected: ${day}, ${timeFmt.format(s.start_ts)}`;
-      $('form').classList.remove('hidden'); $('form').scrollIntoView({behavior:'smooth'});
-    };
-    grid.append(b);
+    box.append(grid);
   }
 }
 
 $('form').onsubmit = async (e) => {
   e.preventDefault(); if (!chosen) return;
-  $('go').disabled = true; $('out').textContent = '';
+  const out = $('out'); out.className = ''; out.textContent = '';
+  if (!$('name').value.trim()) { out.className = 'msg err'; out.textContent = 'Please enter your name.'; $('name').focus(); return; }
+  if ($('phone').value.replace(/\D/g, '').length < 10) { out.className = 'msg err'; out.textContent = 'Please enter your 10-digit WhatsApp number.'; $('phone').focus(); return; }
+  $('go').disabled = true; $('go').textContent = 'Booking…';
   try {
     const r = await fetch('/api/book', {method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({slotId: chosen.id, name: $('name').value, phone: $('phone').value, request: $('req').value})});
     const d = await r.json();
     if (!r.ok) throw new Error(d.error || 'Something went wrong.');
-    $('form').innerHTML = '<h2 style="margin-top:0">✅ Booking confirmed</h2><p class="sub"></p><p>A confirmation has been sent to your WhatsApp.</p><a class="btn" href="/">Back to website</a>';
-    $('form').querySelector('.sub').textContent = d.when;
-    load();
+    $('p1').classList.add('hidden'); $('p2').classList.add('hidden');
+    const f = $('form'); f.replaceChildren();
+    const done = el('div', 'done');
+    done.append(el('div', 'tick', '✓'), el('h2', '', 'Your prayer is booked!'), el('p', '', d.when));
+    const wa = el('div', 'wa', '💬 A confirmation has been sent to your WhatsApp.');
+    const manage = el('a', 'btn ghost', 'View or cancel booking'); manage.href = d.manageUrl;
+    const again = el('button', 'btn', 'Book another slot'); again.type = 'button'; again.onclick = () => location.reload();
+    done.append(wa, manage, again); f.append(done);
+    window.scrollTo({top: 0, behavior: 'smooth'});
   } catch (err) {
-    const o = $('out'); o.className = 'msg err'; o.textContent = err.message; $('go').disabled = false; load();
+    out.className = 'msg err'; out.textContent = err.message; $('go').disabled = false; $('go').textContent = 'Confirm my booking'; chosen = null; $('form').classList.add('hidden'); load(true);
   }
 };
 load();
