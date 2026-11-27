@@ -1,0 +1,65 @@
+Object.assign(I18N.en, {
+  aTitle: 'Prayer Slots – Admin', aView: 'View public page', aLogin: 'Admin login', aPw: 'Password', aLoginBtn: 'Log in', aLogout: 'Log out',
+  aWrongPw: 'Wrong password.', aExpired: 'Session expired. Please log in again.',
+  tabBookings: 'Bookings', tabSlots: 'Manage slots',
+  sUpcoming: 'Upcoming', sPast: 'Past', sToday: 'Today', sTotal: 'Upcoming bookings', sSlotsBooked: 'Slots with bookings',
+  noBookings: 'No bookings yet.', noPast: 'No past bookings.', people: (n) => `${n} ${n === 1 ? 'person' : 'people'}`,
+  addSlots: 'Add slots', date: 'Date', times: 'Times (comma separated, 24h)', timesPh: '06:00, 07:00, 18:30',
+  dur: 'Minutes per slot', cap: 'People per slot', weeks: 'Repeat weekly for (weeks)', note: 'Note (optional)', notePh: 'e.g. Pastor John', addBtn: 'Add slots',
+  added: (n) => `${n} slot(s) added.`, slotsList: 'All slots', noSlots: 'No slots yet. Add some above.',
+  booked: 'booked', minShort: 'min', delSlot: 'Delete slot', cancel: 'Cancel',
+  confirmDelSlot: 'Delete this slot?', confirmDelSlotN: (n) => `Delete this slot? ${n} booked person(s) will be notified on WhatsApp.`,
+  confirmCancel: 'Cancel this booking and notify them?', chat: 'Chat on WhatsApp', yes: 'Yes', no: 'No', phoneLbl: 'WhatsApp',
+  center: 'Prayer Tower', centerHint: 'Kattakada: Mon, Tue, Thu, Fri. Thirumala: Tue, Sat. Poovar: Tue. Visitors can book from the day before.', errMonTue: 'This Prayer Tower is not open on that day. Kattakada: Monday, Tuesday, Thursday, Friday. Thirumala: Tuesday, Saturday. Poovar: Tuesday only.',
+  allCenters: 'All Prayer Towers', placeLbl: 'Place',
+});
+Object.assign(I18N.ml, {
+  aTitle: 'പ്രാർത്ഥനാ അഡ്മിൻ', aView: 'പൊതു പേജ് കാണുക', aLogin: 'അഡ്മിൻ ലോഗിൻ', aPw: 'പാസ്‌വേഡ്', aLoginBtn: 'ലോഗിൻ', aLogout: 'ലോഗൗട്ട്',
+  aWrongPw: 'പാസ്‌വേഡ് തെറ്റാണ്.', aExpired: 'സെഷൻ കഴിഞ്ഞു. വീണ്ടും ലോഗിൻ ചെയ്യുക.',
+  tabBookings: 'ബുക്കിംഗുകൾ', tabSlots: 'സമയങ്ങൾ നിയന്ത്രിക്കുക',
+  sUpcoming: 'വരാനിരിക്കുന്നവ', sPast: 'കഴിഞ്ഞവ', sToday: 'ഇന്ന്', sTotal: 'വരാനിരിക്കുന്ന ബുക്കിംഗുകൾ', sSlotsBooked: 'ബുക്കിംഗുള്ള സമയങ്ങൾ',
+  noBookings: 'ഇതുവരെ ബുക്കിംഗുകളില്ല.', noPast: 'കഴിഞ്ഞ ബുക്കിംഗുകളില്ല.', people: (n) => `${n} പേർ`,
+  addSlots: 'സമയങ്ങൾ ചേർക്കുക', date: 'തീയതി', times: 'സമയങ്ങൾ (കോമ ഇട്ട് വേർതിരിക്കുക, 24 മണിക്കൂർ)', timesPh: '06:00, 07:00, 18:30',
+  dur: 'ഓരോ സമയത്തിന്റെയും ദൈർഘ്യം (മിനിറ്റ്)', cap: 'ഓരോ സമയത്തും എത്ര പേർ', weeks: 'ആഴ്ചതോറും ആവർത്തിക്കുക (ആഴ്ചകൾ)', note: 'കുറിപ്പ് (ഓപ്ഷണൽ)', notePh: 'ഉദാ: പാസ്റ്റർ ജോൺ', addBtn: 'സമയങ്ങൾ ചേർക്കുക',
+  added: (n) => `${n} സമയം ചേർത്തു.`, slotsList: 'എല്ലാ സമയങ്ങളും', noSlots: 'ഇതുവരെ സമയങ്ങളില്ല. മുകളിൽ ചേർക്കുക.',
+  booked: 'ബുക്ക് ചെയ്തു', minShort: 'മിനിറ്റ്', delSlot: 'സമയം ഒഴിവാക്കുക', cancel: 'റദ്ദാക്കുക',
+  confirmDelSlot: 'ഈ സമയം ഒഴിവാക്കണോ?', confirmDelSlotN: (n) => `ഈ സമയം ഒഴിവാക്കണോ? ബുക്ക് ചെയ്ത ${n} പേർക്ക് വാട്സ്ആപ്പിൽ അറിയിപ്പ് പോകും.`,
+  confirmCancel: 'ഈ ബുക്കിംഗ് റദ്ദാക്കി അവരെ അറിയിക്കണോ?', chat: 'വാട്സ്ആപ്പിൽ സംസാരിക്കുക', yes: 'അതെ', no: 'അല്ല', phoneLbl: 'വാട്സ്ആപ്പ്',
+  center: 'പ്രാർത്ഥനാ ടവർ', centerHint: 'കാട്ടാക്കട: തിങ്കൾ, ചൊവ്വ, വ്യാഴം, വെള്ളി. തിരുമല: ചൊവ്വ, ശനി. പൂവാർ: ചൊവ്വ. തലേദിവസം മുതൽ ബുക്ക് ചെയ്യാം.', errMonTue: 'ആ ദിവസം ഈ ടവർ തുറക്കില്ല. കാട്ടാക്കട: തിങ്കൾ, ചൊവ്വ, വ്യാഴം, വെള്ളി. തിരുമല: ചൊവ്വ, ശനി. പൂവാർ: ചൊവ്വ മാത്രം.',
+  allCenters: 'എല്ലാ ടവറുകളും', placeLbl: 'സ്ഥലം',
+});
+
+// ---- planner, extra slots, arrival status, reception ----
+Object.assign(I18N.en, {
+  planTitle: 'Plan slots from the crowd data', kind: 'Slot type', kindPublic: 'Public (website visitors)', kindExtra: 'Extra (reception only)',
+  calcPer: 'Slots per hour', calcPeople: 'People per hour', calcDay: 'Capacity for the day', calcNeed: 'Expected people (day)',
+  colHour: 'Hour', colCrowd: 'Usual crowd', colPeople: 'Records', colExpected: 'Expected', colSlots: 'Slots', colCap: 'Capacity', colCheck: 'Check',
+  enough: 'Enough', shortBy: (n) => `Short by ${n}`, closedDay: 'There is no crowd data for this weekday, so no hours are suggested. Type your own times below.',
+  leftover: (m) => `${m} min per hour is left over because the slot length does not divide 60.`,
+  customTimes: 'Custom times (optional, replaces the table)', createSlots: 'Create slots', willCreate: (n) => `${n} slot(s) will be created`, pickHours: 'Tick the hours to create',
+  extraTag: 'Extra', recTag: 'Reception', arrHere: 'Arrived', arrNo: 'Not coming', arrWait: 'Waiting', crowdNote: 'Usual crowd comes from the church hourly records. Expected = records scaled to the average day.',
+  rTitle: 'Reception', rLogin: 'Reception login', rExtra: 'Book a slot (normal and extra)', rNoExtra: 'No open slots for today or tomorrow. Ask the admin to add some.',
+  rBookTitle: 'Book this walk-in', rLangLbl: 'WhatsApp message language', rBook: 'Book', rBooked: 'Booked. A WhatsApp confirmation was sent.', rList: 'Bookings today and tomorrow', rNoBk: 'No bookings yet.', rRefresh: 'Refresh',
+  rNotSet: 'Reception login is not set up yet. Ask the admin.',
+});
+Object.assign(I18N.ml, {
+  planTitle: 'തിരക്കിന്റെ കണക്കനുസരിച്ച് സമയങ്ങൾ ഒരുക്കുക', kind: 'സമയത്തിന്റെ തരം', kindPublic: 'പൊതു (വെബ്സൈറ്റ്)', kindExtra: 'അധികം (റിസപ്ഷൻ മാത്രം)',
+  calcPer: 'ഒരു മണിക്കൂറിലെ സമയങ്ങൾ', calcPeople: 'ഒരു മണിക്കൂറിലെ ആളുകൾ', calcDay: 'ദിവസത്തെ ആകെ ശേഷി', calcNeed: 'പ്രതീക്ഷിക്കുന്ന ആളുകൾ (ദിവസം)',
+  colHour: 'മണിക്കൂർ', colCrowd: 'സാധാരണ തിരക്ക്', colPeople: 'രേഖകൾ', colExpected: 'പ്രതീക്ഷ', colSlots: 'സമയങ്ങൾ', colCap: 'ശേഷി', colCheck: 'പരിശോധന',
+  enough: 'മതി', shortBy: (n) => `${n} കുറവ്`, closedDay: 'ഈ ദിവസത്തിന് തിരക്ക് കണക്കില്ല, അതിനാൽ മണിക്കൂറുകൾ നിർദ്ദേശിക്കുന്നില്ല. താഴെ സ്വന്തം സമയങ്ങൾ നൽകുക.',
+  leftover: (m) => `സമയദൈർഘ്യം 60-നെ ഹരിക്കാത്തതിനാൽ ഓരോ മണിക്കൂറിലും ${m} മിനിറ്റ് ബാക്കിയാകും.`,
+  customTimes: 'സ്വന്തം സമയങ്ങൾ (ഓപ്ഷണൽ, പട്ടികയ്ക്ക് പകരം)', createSlots: 'സമയങ്ങൾ ഉണ്ടാക്കുക', willCreate: (n) => `${n} സമയം ഉണ്ടാക്കും`, pickHours: 'ഉണ്ടാക്കേണ്ട മണിക്കൂറുകൾ തിരഞ്ഞെടുക്കുക',
+  extraTag: 'അധികം', recTag: 'റിസപ്ഷൻ', arrHere: 'എത്തി', arrNo: 'വരുന്നില്ല', arrWait: 'കാത്തിരിക്കുന്നു', crowdNote: 'സാധാരണ തിരക്ക് സഭയുടെ മണിക്കൂർ രേഖകളിൽ നിന്നാണ്. പ്രതീക്ഷ = രേഖകൾ ശരാശരി ദിവസത്തിലേക്ക് മാറ്റിയത്.',
+  rTitle: 'റിസപ്ഷൻ', rLogin: 'റിസപ്ഷൻ ലോഗിൻ', rExtra: 'സമയം ബുക്ക് ചെയ്യുക (സാധാരണവും അധികവും)', rNoExtra: 'ഇന്നോ നാളെയോ ഒഴിവുള്ള സമയങ്ങളില്ല. അഡ്മിനോട് ചേർക്കാൻ ആവശ്യപ്പെടുക.',
+  rBookTitle: 'ഈ വാക്ക്-ഇൻ ബുക്ക് ചെയ്യുക', rLangLbl: 'വാട്സ്ആപ്പ് സന്ദേശത്തിന്റെ ഭാഷ', rBook: 'ബുക്ക് ചെയ്യുക', rBooked: 'ബുക്ക് ചെയ്തു. വാട്സ്ആപ്പ് സ്ഥിരീകരണം അയച്ചു.', rList: 'ഇന്നത്തെയും നാളത്തെയും ബുക്കിംഗുകൾ', rNoBk: 'ഇതുവരെ ബുക്കിംഗുകളില്ല.', rRefresh: 'പുതുക്കുക',
+  rNotSet: 'റിസപ്ഷൻ ലോഗിൻ ഇതുവരെ ഒരുക്കിയിട്ടില്ല. അഡ്മിനോട് ചോദിക്കുക.',
+});
+
+Object.assign(I18N.en, {
+  perHourText: (m, n, raw) => `60 ÷ ${m} = ${raw}${raw !== n ? ` → ${n} whole slots` : ''} per hour`,
+  freeCount: (n) => `${n} free`, normalTag: 'Normal',
+});
+Object.assign(I18N.ml, {
+  perHourText: (m, n, raw) => `60 ÷ ${m} = ${raw}${raw !== n ? ` → ${n} പൂർണ്ണ സമയങ്ങൾ` : ''} (ഒരു മണിക്കൂറിൽ)`,
+  freeCount: (n) => `${n} ഒഴിവ്`, normalTag: 'സാധാരണ',
+});

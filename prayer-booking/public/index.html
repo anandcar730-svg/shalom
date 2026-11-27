@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Prayer Appointment – Shalom Church</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Malayalam:wght@400;500;600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="i18n.js"></script>
+<script src="i18n-extra.js"></script>
+</head>
+<body>
+<header><strong>Shalom Church</strong><div class="hright"><a class="back opt" href="https://www.shalomchurch.co.in" data-i18n="back"></a><div class="lang"><button type="button" data-lang="en">EN</button><button type="button" data-lang="ml">മലയാളം</button></div></div></header>
+<section class="hero">
+  <h1 data-i18n="heroTitle"></h1>
+  <p data-i18n="heroSub"></p>
+</section>
+<main>
+  <div class="panel" id="p0">
+    <div class="step"><i>1</i> <span data-i18n="step1"></span></div>
+    <div id="centers" class="centers"></div>
+  </div>
+
+  <div class="panel hidden" id="p1">
+    <div class="step"><i>2</i> <span data-i18n="step2"></span></div>
+    <div id="dates" class="days2"></div>
+    <div id="nomsg" class="notice hidden"></div>
+  </div>
+
+  <div class="panel hidden" id="p2">
+    <div class="step"><i>3</i> <span data-i18n="step3"></span></div>
+    <div class="legend"><span data-i18n="lvTitle"></span>:
+      <span class="lvchip green" data-i18n="lvGreen"></span><span class="lvchip orange" data-i18n="lvOrange"></span><span class="lvchip red" data-i18n="lvRed"></span></div>
+    <div class="dayfree" id="dayfree"></div>
+    <div id="times"></div>
+  </div>
+
+  <form class="panel hidden" id="form" novalidate>
+    <div class="step"><i>4</i> <span data-i18n="step4"></span></div>
+    <div class="summary"><span data-i18n="yourSlot"></span><b id="sum"></b><span id="sumc"></span></div>
+    <label for="name" data-i18n="name"></label>
+    <input id="name" required maxlength="80" autocomplete="name" data-i18n-ph="namePh">
+    <label for="phone" data-i18n="phone"></label>
+    <div class="phone"><div class="cc">+91</div><input id="phone" type="tel" inputmode="numeric" required autocomplete="tel-national" placeholder="94003 18000"></div>
+    <div class="hint" data-i18n="phoneHint"></div>
+    <label for="place" data-i18n="place"></label>
+    <input id="place" required maxlength="80" autocomplete="address-level2" data-i18n-ph="placePh">
+    <button class="btn" id="go" data-i18n="confirm"></button>
+    <div id="out"></div>
+  </form>
+</main>
+<script>
+const $ = (id) => document.getElementById(id);
+const IST = 'Asia/Kolkata';
+// Centers. days = weekdays open (0=Sun..6=Sat); null = every day. The server enforces the same rule.
+const CENTERS = [
+  {id: 'kattakada', days: [1, 2, 4, 5], note: 'everyDay'},  // Mon, Tue, Thu, Fri (note text key kept as everyDay)
+  {id: 'thirumala', days: [2, 6], note: 'monTue'},   // Tuesday, Saturday (key name kept; text says Tue/Sat)
+  {id: 'poovar', days: [2], note: 'tueOnly'},        // Tuesday
+];
+let keyF, dayF, longF, timeF, hourF;
+function mkFmt() {
+  const L = locale();
+  keyF = new Intl.DateTimeFormat('en-CA', {timeZone: IST});
+  hourF = new Intl.DateTimeFormat('en-GB', {hour:'2-digit', hour12:false, timeZone: IST});
+  dayF = new Intl.DateTimeFormat(L, {weekday:'short', day:'numeric', month:'short', timeZone: IST});
+  longF = new Intl.DateTimeFormat(L, {weekday:'long', day:'numeric', month:'long', timeZone: IST});
+  timeF = new Intl.DateTimeFormat(L, {hour:'numeric', minute:'2-digit', hour12:true, timeZone: IST});
+}
+mkFmt();
+const el = (t, c, txt) => { const e = document.createElement(t); if (c) e.className = c; if (txt != null) e.textContent = txt; return e; };
+const DAY = 24 * 3600 * 1000;
+
+let slots = [], center = null, selDay = null, chosen = null, done = null, loadFailed = false;
+const dayKeys = () => [keyF.format(Date.now()), keyF.format(Date.now() + DAY)];
+const slotText = (s) => `${longF.format(s.start_ts)} · ${timeF.format(s.start_ts)} (${s.duration_min} ${t('min')})`;
+const daySlots = (c, k) => slots.filter(s => s.center === c && keyF.format(s.start_ts) === k);
+const openSlots = (c, k) => daySlots(c, k).filter(s => s.left > 0);
+
+async function load() {
+  try { slots = await (await fetch('/api/slots')).json(); loadFailed = false; }
+  catch { loadFailed = true; slots = []; }
+  render();
+}
+
+function render() {
+  if (done) return;
+  renderCenters();
+  const p1 = $('p1'), p2 = $('p2'), form = $('form'), nomsg = $('nomsg');
+  if (loadFailed) { p1.classList.remove('hidden'); $('dates').replaceChildren(); nomsg.className = 'notice'; nomsg.textContent = t('loadFail'); p2.classList.add('hidden'); form.classList.add('hidden'); return; }
+  if (!center) { p1.classList.add('hidden'); p2.classList.add('hidden'); form.classList.add('hidden'); return; }
+  p1.classList.remove('hidden');
+  const [today, tomorrow] = dayKeys();
+  const avail = {[today]: openSlots(center.id, today), [tomorrow]: openSlots(center.id, tomorrow)};
+  if (!avail[selDay] || !avail[selDay].length) selDay = avail[today].length ? today : avail[tomorrow].length ? tomorrow : null;
+
+  const box = $('dates'); box.replaceChildren();
+  for (const [k, label] of [[today, 'today'], [tomorrow, 'tomorrow']]) {
+    const ts = k === today ? Date.now() : Date.now() + DAY;
+    const b = el('button', 'date' + (k === selDay ? ' sel' : '')); b.type = 'button'; b.disabled = !avail[k].length;
+    b.append(el('b', '', t(label)), el('small', '', dayF.format(ts)), el('small', 'cnt', avail[k].length ? t('slotsFree', avail[k].length) : t('full')));
+    b.onclick = () => { selDay = k; chosen = null; form.classList.add('hidden'); render(); p2.scrollIntoView({behavior:'smooth', block:'start'}); };
+    box.append(b);
+  }
+  if (!selDay) {
+    nomsg.className = 'notice'; nomsg.textContent = center.days ? t('noSlotsCenterMT', centerLabel(center.id), t(center.note)) : t('noSlotsCenter', centerLabel(center.id));
+    p2.classList.add('hidden'); form.classList.add('hidden'); chosen = null; return;
+  }
+  nomsg.className = 'hidden'; nomsg.textContent = '';
+  renderTimes(daySlots(center.id, selDay));
+}
+
+function renderCenters() {
+  const box = $('centers'); box.replaceChildren();
+  for (const c of CENTERS) {
+    const b = el('button', 'center' + (center && center.id === c.id ? ' sel' : '')); b.type = 'button';
+    b.append(el('b', '', centerLabel(c.id)), el('small', '', t(c.note)));
+    b.onclick = () => { center = c; selDay = null; chosen = null; $('form').classList.add('hidden'); render(); $('p1').scrollIntoView({behavior:'smooth', block:'start'}); };
+    box.append(b);
+  }
+}
+
+const LV = {red: 'lvRed', orange: 'lvOrange', green: 'lvGreen'};
+const DOT = {red: '🔴', orange: '🟠', green: '🟢'};
+function renderTimes(list) {
+  $('p2').classList.remove('hidden');
+  const openList = list.filter(s => s.left > 0);
+  $('dayfree').textContent = t('dayFree', openList.length, openList.reduce((n, s) => n + s.left, 0));
+  const box = $('times'); box.replaceChildren();
+  const hourOnly = new Intl.DateTimeFormat(locale(), {hour:'numeric', hour12:true, timeZone: IST});
+  // one block per hour (like the church's hourly records), colored by how busy that hour usually is
+  const byHour = new Map();
+  for (const s of list) { const h = parseInt(hourF.format(s.start_ts)); if (!byHour.has(h)) byHour.set(h, []); byHour.get(h).push(s); }
+  for (const [, group] of byHour) {
+    const start = group[0].start_ts - Number(group[0].time.slice(3, 5)) * 60000;
+    const head = el('div', 'hourh');
+    head.append(el('span', '', `${hourOnly.format(start)} – ${hourOnly.format(start + 3600000)}`));
+    if (group[0].level) head.append(el('span', 'lvchip ' + group[0].level, t(LV[group[0].level])));
+    box.append(head);
+    box.append(el('div', 'hint slotcount', t('slotsAvail', group.filter(s => s.left > 0).length, group.length)));
+    const grid = el('div', 'times');
+    for (const s of group) {
+      const b = el('button', 'time' + (s.level ? ' lv-' + s.level : '') + (chosen && chosen.id === s.id ? ' sel' : '')); b.type = 'button'; b.disabled = s.left === 0;
+      b.append(el('b', '', timeF.format(s.start_ts)));
+      b.append(el('small', s.left > 0 && s.left <= 2 && s.capacity > 1 ? 'few' : '', s.left === 0 ? t('full') : t('spotsLeft', s.left)));
+      if (s.note) b.append(el('small', '', s.note));
+      b.onclick = () => {
+        chosen = s; renderTimes(list); showSummary();
+        $('form').classList.remove('hidden'); $('form').scrollIntoView({behavior:'smooth', block:'start'});
+        setTimeout(() => $('name')?.focus({preventScroll:true}), 400);
+      };
+      grid.append(b);
+    }
+    box.append(grid);
+  }
+}
+function showSummary() {
+  if (!chosen) return;
+  $('sum').textContent = slotText(chosen);
+  const c = $('sumc'); c.textContent = '📍 ' + centerLabel(chosen.center) + (chosen.level ? '  ·  ' + DOT[chosen.level] + ' ' + t(LV[chosen.level]) : '');
+}
+
+function renderDone() {
+  const f = $('form'); f.replaceChildren();
+  const box = el('div', 'done');
+  const again = el('button', 'btn', t('another')); again.type = 'button'; again.onclick = () => location.reload();
+  const manage = el('a', 'btn ghost', t('viewCancel')); manage.href = done.manageUrl;
+  box.append(el('div', 'tick', '✓'), el('h2', '', t('doneTitle')), el('p', '', '📍 ' + centerLabel(done.slot.center)), el('p', '', slotText(done.slot)), el('div', 'wa', t('doneWa')), manage, again);
+  f.append(box);
+}
+
+window.onLang = () => {
+  mkFmt();
+  if (done) { renderDone(); return; }
+  render(); showSummary();
+};
+
+$('form').onsubmit = async (e) => {
+  e.preventDefault(); if (!chosen) return;
+  const out = $('out'); out.className = ''; out.textContent = '';
+  if (!$('name').value.trim()) { out.className = 'msg err'; out.textContent = t('errName'); $('name').focus(); return; }
+  if ($('phone').value.replace(/\D/g, '').length < 10) { out.className = 'msg err'; out.textContent = t('errPhone'); $('phone').focus(); return; }
+  if (!$('place').value.trim()) { out.className = 'msg err'; out.textContent = t('errPlace'); $('place').focus(); return; }
+  $('go').disabled = true; $('go').textContent = t('booking');
+  try {
+    const r = await fetch('/api/book', {method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({slotId: chosen.id, name: $('name').value, phone: $('phone').value, place: $('place').value, lang: LANG})});
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || t('errGeneric'));
+    for (const id of ['p0', 'p1', 'p2']) $(id).classList.add('hidden');
+    done = {manageUrl: d.manageUrl, slot: chosen}; renderDone();
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  } catch (err) {
+    out.className = 'msg err'; out.textContent = err.message; $('go').disabled = false; $('go').textContent = t('confirm'); chosen = null; $('form').classList.add('hidden'); load();
+  }
+};
+load();
+</script>
+</body>
+</html>

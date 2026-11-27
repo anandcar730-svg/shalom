@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Your Booking – Shalom Church</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Malayalam:wght@400;500;600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="i18n.js"></script>
+<script src="i18n-extra.js"></script>
+</head>
+<body>
+<header><strong>Shalom Church</strong><div class="hright"><a class="back opt" href="/" data-i18n="bookSlot"></a><div class="lang"><button type="button" data-lang="en">EN</button><button type="button" data-lang="ml">മലയാളം</button></div></div></header>
+<main class="page">
+  <div class="card" id="box" style="text-align:center;padding:28px 22px">…</div>
+  <div class="card hidden" id="changebox">
+    <h2 style="margin-top:0" data-i18n="mChangeTitle"></h2>
+    <div class="legend"><span data-i18n="lvTitle"></span>:
+      <span class="lvchip green" data-i18n="lvGreen"></span><span class="lvchip orange" data-i18n="lvOrange"></span><span class="lvchip red" data-i18n="lvRed"></span></div>
+    <div id="chlist"></div>
+    <div id="chmsg"></div>
+    <button class="btn hidden" id="chgo" type="button" data-i18n="mConfirmChange"></button>
+  </div>
+</main>
+<script>
+const params = new URLSearchParams(location.search);
+const tok = params.get('t') || '';
+const box = document.getElementById('box'), changebox = document.getElementById('changebox');
+const IST = 'Asia/Kolkata';
+const mk = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+const LV = {red: 'lvRed', orange: 'lvOrange', green: 'lvGreen'};
+const DAY = 24 * 3600 * 1000;
+let data = null, err = null, openSlots = [], picked = null, changing = params.get('change') === '1', askMode = params.get('ask') === '1', notice = '';
+
+const whenText = (ts) => new Intl.DateTimeFormat(locale(), {weekday:'short', day:'numeric', month:'short', hour:'numeric', minute:'2-digit', hour12:true, timeZone: IST}).format(ts);
+const timeText = (ts) => new Intl.DateTimeFormat(locale(), {hour:'numeric', minute:'2-digit', hour12:true, timeZone: IST}).format(ts);
+const dateKey = (ts) => new Intl.DateTimeFormat('en-CA', {timeZone: IST}).format(ts);
+async function post(path, body) {
+  const r = await fetch(path, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body || {})});
+  const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.error || t('errGeneric')); return d;
+}
+
+async function load() {
+  const r = await fetch('/api/booking/' + encodeURIComponent(tok)); const d = await r.json();
+  if (!r.ok) { err = d.error; data = null; } else { data = d; err = null; }
+  render();
+}
+
+function render() {
+  box.textContent = '';
+  if (err) { box.append(mk('p', 'sub', err)); const a = mk('a', 'btn', t('mBookPrayer')); a.href = '/'; box.append(a); changebox.classList.add('hidden'); return; }
+  if (!data) return;
+  const cancelled = data.status === 'cancelled';
+  const tick = mk('div', '', cancelled ? '✕' : '✓');
+  tick.style.cssText = 'width:64px;height:64px;border-radius:50%;display:grid;place-items:center;margin:0 auto 14px;font-size:32px;color:#fff;background:' + (cancelled ? 'var(--danger)' : 'var(--brand)');
+  box.append(tick,
+    mk('h2', '', cancelled ? t('mCancelled') : (data.past && Date.now() - data.start_ts > 3600000) ? t('mPast') : t('mBooked')),
+    mk('p', 'sub', t('mShalom') + ' ' + data.name));
+  const sum = mk('div', 'summary'); sum.style.cssText = 'margin:18px 0;text-align:left';
+  sum.append(mk('span', '', t('mWhen')), mk('b', '', whenText(data.start_ts)), mk('span', '', '📍 ' + centerLabel(data.center)));
+  if (data.level) { const c = mk('div'); c.style.marginTop = '8px'; c.append(mk('span', 'sub', t('lvTitle') + ': '), mk('span', 'lvchip ' + data.level, t(LV[data.level]))); sum.append(c); }
+  box.append(sum);
+  if (notice) { box.append(mk('div', 'msg ok', notice)); }
+
+  if (cancelled) { const a = mk('a', 'btn', t('another')); a.href = '/'; box.append(a); changebox.classList.add('hidden'); return; }
+
+  // "Are you here?" shows once the slot time has come (or when opened from the WhatsApp message)
+  if ((data.past || askMode) && data.arrival !== 'here') {
+    const ask = mk('div', 'card'); ask.style.cssText = 'text-align:center;margin:14px 0 6px';
+    ask.append(mk('h2', '', '🙏 ' + t('mAskTitle')));
+    if (data.arrival === 'no') ask.append(mk('p', 'sub', t('mNoMsg')));
+    else {
+      const row = mk('div', 'pickrow'); row.style.justifyContent = 'center';
+      const yes = mk('button', 'btn', t('mHere')); yes.type = 'button'; yes.style.cssText = 'margin:8px 0 0;width:auto;padding:12px 26px';
+      const no = mk('button', 'btn danger', t('mNo')); no.type = 'button'; no.style.cssText = 'margin:8px 0 0;width:auto;padding:12px 26px';
+      yes.onclick = async () => { yes.disabled = no.disabled = true; try { await post(`/api/booking/${encodeURIComponent(tok)}/arrival`, {status:'here'}); notice = t('mHereThanks'); await load(); } catch (e) { alert(e.message); } };
+      no.onclick = async () => { yes.disabled = no.disabled = true; try { await post(`/api/booking/${encodeURIComponent(tok)}/arrival`, {status:'no'}); changing = true; await load(); } catch (e) { alert(e.message); } };
+      row.append(yes, no); ask.append(row);
+    }
+    box.append(ask);
+  }
+  if (data.arrival === 'here') box.append(mk('div', 'msg ok', t('mHereThanks')));
+
+  if (!data.past || data.arrival === 'no') {
+    const chg = mk('button', 'btn ghost', t('mChange')); chg.type = 'button';
+    chg.onclick = () => { changing = true; render(); document.getElementById('changebox').scrollIntoView({behavior:'smooth'}); };
+    box.append(chg);
+  }
+  if (!data.past) {
+    const b = mk('button', 'btn danger', t('mCancel')); b.type = 'button'; b.style.marginTop = '12px';
+    const hint = mk('p', 'hint', t('mHint'));
+    b.onclick = async () => {
+      if (b.dataset.armed !== '1') { b.dataset.armed = '1'; b.textContent = t('mAgain'); setTimeout(() => { b.dataset.armed = ''; b.textContent = t('mCancel'); }, 4000); return; }
+      b.disabled = true;
+      try { await post(`/api/booking/${encodeURIComponent(tok)}/cancel`); changing = false; load(); } catch (e) { b.disabled = false; hint.textContent = e.message; }
+    };
+    box.append(b, hint);
+  }
+  changebox.classList.toggle('hidden', !changing);
+  if (changing) renderChange();
+}
+
+async function renderChange() {
+  const list = document.getElementById('chlist'), go = document.getElementById('chgo'), msg = document.getElementById('chmsg');
+  msg.className = ''; msg.textContent = '';
+  try { openSlots = await (await fetch('/api/slots')).json(); } catch { openSlots = []; }
+  openSlots = openSlots.filter((s) => s.left > 0 && s.id !== data.slot_id);
+  list.replaceChildren(); go.classList.add('hidden');
+  if (!openSlots.length) { list.append(mk('p', 'empty', t('mNoSlots'))); return; }
+  const today = dateKey(Date.now());
+  const groups = new Map(); // center|day -> slots
+  for (const s of openSlots) { const k = s.center + '|' + dateKey(s.start_ts); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(s); }
+  for (const [k, slots] of groups) {
+    const [c, d] = k.split('|');
+    list.append(mk('div', 'dayh', `${centerLabel(c)} · ${t(d === today ? 'today' : 'tomorrow')}`));
+    const row = mk('div', 'pickrow');
+    for (const s of slots) {
+      const b = mk('button', 'pick' + (s.level ? ' lv-' + s.level : '') + (picked === s.id ? ' sel' : ''), timeText(s.start_ts)); b.type = 'button';
+      b.onclick = () => { picked = s.id; renderChange(); };
+      row.append(b);
+    }
+    list.append(row);
+  }
+  if (picked && openSlots.some((s) => s.id === picked)) {
+    go.classList.remove('hidden');
+    go.onclick = async () => {
+      go.disabled = true;
+      try { const r = await post(`/api/booking/${encodeURIComponent(tok)}/change`, {slotId: picked}); picked = null; changing = false; askMode = false; notice = t('mChanged'); await load(); }
+      catch (e) { msg.className = 'msg err'; msg.textContent = e.message; go.disabled = false; renderChangeKeep(); }
+    };
+  }
+}
+function renderChangeKeep() { /* message stays visible; list refreshes on next click */ }
+
+window.onLang = render;
+load();
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "name": "prayer-booking",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Personal prayer slot booking for Shalom Church",
+  "main": "server.js",
+  "engines": { "node": ">=22.13" },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
