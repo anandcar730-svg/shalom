@@ -10,8 +10,8 @@ Object.assign(I18N.en, {
   booked: 'booked', minShort: 'min', delSlot: 'Delete slot', cancel: 'Cancel',
   confirmDelSlot: 'Delete this slot?', confirmDelSlotN: (n) => `Delete this slot? ${n} booked person(s) will be notified on WhatsApp.`,
   confirmCancel: 'Cancel this booking and notify them?', chat: 'Chat on WhatsApp', yes: 'Yes', no: 'No', phoneLbl: 'WhatsApp',
-  center: 'Prayer center', centerHint: 'Kattakada: Mon, Tue, Thu, Fri. Thirumala: Tue, Sat. Poovar: Tue. Visitors can book from the day before.', errMonTue: 'This center is not open on that day. Kattakada: Monday, Tuesday, Thursday, Friday. Thirumala: Tuesday, Saturday. Poovar: Tuesday only.',
-  allCenters: 'All centers', placeLbl: 'Place',
+  center: 'Prayer Tower', centerHint: 'Kattakada: Mon, Tue, Thu, Fri. Thirumala: Tue, Sat. Poovar: Tue. Visitors can book from the day before.', errMonTue: 'This Prayer Tower is not open on that day. Kattakada: Monday, Tuesday, Thursday, Friday. Thirumala: Tuesday, Saturday. Poovar: Tuesday only.',
+  allCenters: 'All Prayer Towers', placeLbl: 'Place',
 });
 Object.assign(I18N.ml, {
   aTitle: 'പ്രാർത്ഥനാ അഡ്മിൻ', aView: 'പൊതു പേജ് കാണുക', aLogin: 'അഡ്മിൻ ലോഗിൻ', aPw: 'പാസ്‌വേഡ്', aLoginBtn: 'ലോഗിൻ', aLogout: 'ലോഗൗട്ട്',

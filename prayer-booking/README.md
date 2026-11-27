@@ -20,8 +20,8 @@ Requires Node 22.13+ (uses the built-in `node:sqlite`, no database to install).
 ## Appointment rules
 - Visitors book a **personal prayer appointment** with name, WhatsApp number and place (no prayer-request field).
 - Only **today and tomorrow** can be booked (India time). Anything later is hidden and refused by the server.
-- Three centers: **Kattakada Shalom** (Mondays, Tuesdays, Thursdays and Fridays), **Thirumala Shalom** (Tuesdays and
-  Saturdays) and **Poovar Shalom** (Tuesdays only). Because only today and tomorrow can be booked, each center opens
+- Three Prayer Towers: **Kattakada Shalom** (Mondays, Tuesdays, Thursdays and Fridays), **Thirumala Shalom** (Tuesdays and
+  Saturdays) and **Poovar Shalom** (Tuesdays only). Because only today and tomorrow can be booked, each Prayer Tower opens
   for booking on the day before and on the day itself, and not otherwise.
   The admin cannot add slots on other weekdays, and the server refuses such bookings even if a slot exists.
   Edit the `CENTERS` table in `server.js` (and `CENTERS` in `public/index.html`) to change names or days.
@@ -37,10 +37,10 @@ Requires Node 22.13+ (uses the built-in `node:sqlite`, no database to install).
 - Existing slots from before this change are treated as Kattakada.
 
 ## How it works
-- **Admin** picks a center and adds slots (date, times, minutes, people per slot, optional weekly repeat).
+- **Admin** picks a Prayer Tower and adds slots (date, times, minutes, people per slot, optional weekly repeat).
   The Bookings tab shows who booked (name, tap-to-chat WhatsApp number, place), filterable by center.
   Admin can cancel a booking or delete a slot; booked people are notified automatically.
-- **Visitors** choose a center, then today or tomorrow, then a time, and enter name, WhatsApp number and place.
+- **Visitors** choose a Prayer Tower, then today or tomorrow, then a time, and enter name, WhatsApp number and place.
   Seats are checked inside a database transaction, so a slot can never be overbooked.
 - **WhatsApp messages**: confirmation (with cancel link), admin alert for each new or cancelled booking,
   cancellation by the church, and a reminder 2 hours before.
