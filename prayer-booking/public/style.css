@@ -157,3 +157,10 @@ html{overflow-x:hidden}
 .pick.extra{border-style:dashed;border-color:#7a67d9}
 .pick.extra.sel{border-style:solid}
 .hourh + .hint{margin:-4px 0 8px}
+
+.dayfree{font-weight:600;color:var(--brand-d);background:var(--soft);border-radius:10px;padding:8px 12px;margin:8px 0 2px;font-size:14px}
+.dayfree:empty{display:none}
+.days2 .date small.cnt{margin-top:2px;font-weight:500;color:var(--brand-d)}
+.days2 .date.sel small.cnt{color:#d6f5f0}
+.days2 .date:disabled small.cnt{color:#9a9a9a}
+.slotcount{margin:-4px 0 8px;font-weight:500}

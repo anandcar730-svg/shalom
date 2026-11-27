@@ -13,3 +13,14 @@ Object.assign(I18N.ml, {
   mChange: 'എന്റെ സമയം മാറ്റുക', mChangeTitle: 'പുതിയ സമയം തിരഞ്ഞെടുക്കുക', mConfirmChange: 'എന്റെ ബുക്കിംഗ് ഇവിടേക്ക് മാറ്റുക', mChanged: 'നിങ്ങളുടെ ബുക്കിംഗ് മാറ്റി.',
   mNoSlots: 'ഇപ്പോൾ മറ്റ് ഒഴിവുള്ള സമയങ്ങളില്ല. കുറച്ചു കഴിഞ്ഞ് വീണ്ടും നോക്കുക.', mBack: 'പിന്നോട്ട്', mCurrent: 'നിങ്ങളുടെ നിലവിലെ സമയം',
 });
+
+Object.assign(I18N.en, {
+  slotsAvail: (n, total) => `${n} of ${total} slot${total > 1 ? 's' : ''} available`,
+  slotsFree: (n) => (n === 1 ? '1 slot available' : `${n} slots available`),
+  dayFree: (n, spots) => `${n} slot${n === 1 ? '' : 's'} available on this day (${spots} seat${spots === 1 ? '' : 's'})`,
+});
+Object.assign(I18N.ml, {
+  slotsAvail: (n, total) => `${total} സമയങ്ങളിൽ ${n} ഒഴിവുണ്ട്`,
+  slotsFree: (n) => `${n} സമയം ഒഴിവുണ്ട്`,
+  dayFree: (n, spots) => `ഈ ദിവസം ${n} സമയങ്ങൾ ഒഴിവുണ്ട് (${spots} സീറ്റ്)`,
+});

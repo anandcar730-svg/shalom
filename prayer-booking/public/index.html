@@ -30,6 +30,7 @@
     <div class="step"><i>3</i> <span data-i18n="step3"></span></div>
     <div class="legend"><span data-i18n="lvTitle"></span>:
       <span class="lvchip green" data-i18n="lvGreen"></span><span class="lvchip orange" data-i18n="lvOrange"></span><span class="lvchip red" data-i18n="lvRed"></span></div>
+    <div class="dayfree" id="dayfree"></div>
     <div id="times"></div>
   </div>
 
@@ -72,7 +73,8 @@ const DAY = 24 * 3600 * 1000;
 let slots = [], center = null, selDay = null, chosen = null, done = null, loadFailed = false;
 const dayKeys = () => [keyF.format(Date.now()), keyF.format(Date.now() + DAY)];
 const slotText = (s) => `${longF.format(s.start_ts)} · ${timeF.format(s.start_ts)} (${s.duration_min} ${t('min')})`;
-const openSlots = (c, k) => slots.filter(s => s.center === c && keyF.format(s.start_ts) === k && s.left > 0);
+const daySlots = (c, k) => slots.filter(s => s.center === c && keyF.format(s.start_ts) === k);
+const openSlots = (c, k) => daySlots(c, k).filter(s => s.left > 0);
 
 async function load() {
   try { slots = await (await fetch('/api/slots')).json(); loadFailed = false; }
@@ -95,7 +97,7 @@ function render() {
   for (const [k, label] of [[today, 'today'], [tomorrow, 'tomorrow']]) {
     const ts = k === today ? Date.now() : Date.now() + DAY;
     const b = el('button', 'date' + (k === selDay ? ' sel' : '')); b.type = 'button'; b.disabled = !avail[k].length;
-    b.append(el('b', '', t(label)), el('small', '', dayF.format(ts)));
+    b.append(el('b', '', t(label)), el('small', '', dayF.format(ts)), el('small', 'cnt', avail[k].length ? t('slotsFree', avail[k].length) : t('full')));
     b.onclick = () => { selDay = k; chosen = null; form.classList.add('hidden'); render(); p2.scrollIntoView({behavior:'smooth', block:'start'}); };
     box.append(b);
   }
@@ -104,7 +106,7 @@ function render() {
     p2.classList.add('hidden'); form.classList.add('hidden'); chosen = null; return;
   }
   nomsg.className = 'hidden'; nomsg.textContent = '';
-  renderTimes(avail[selDay]);
+  renderTimes(daySlots(center.id, selDay));
 }
 
 function renderCenters() {
@@ -121,6 +123,8 @@ const LV = {red: 'lvRed', orange: 'lvOrange', green: 'lvGreen'};
 const DOT = {red: '🔴', orange: '🟠', green: '🟢'};
 function renderTimes(list) {
   $('p2').classList.remove('hidden');
+  const openList = list.filter(s => s.left > 0);
+  $('dayfree').textContent = t('dayFree', openList.length, openList.reduce((n, s) => n + s.left, 0));
   const box = $('times'); box.replaceChildren();
   const hourOnly = new Intl.DateTimeFormat(locale(), {hour:'numeric', hour12:true, timeZone: IST});
   // one block per hour (like the church's hourly records), colored by how busy that hour usually is
@@ -132,11 +136,12 @@ function renderTimes(list) {
     head.append(el('span', '', `${hourOnly.format(start)} – ${hourOnly.format(start + 3600000)}`));
     if (group[0].level) head.append(el('span', 'lvchip ' + group[0].level, t(LV[group[0].level])));
     box.append(head);
+    box.append(el('div', 'hint slotcount', t('slotsAvail', group.filter(s => s.left > 0).length, group.length)));
     const grid = el('div', 'times');
     for (const s of group) {
-      const b = el('button', 'time' + (s.level ? ' lv-' + s.level : '') + (chosen && chosen.id === s.id ? ' sel' : '')); b.type = 'button';
+      const b = el('button', 'time' + (s.level ? ' lv-' + s.level : '') + (chosen && chosen.id === s.id ? ' sel' : '')); b.type = 'button'; b.disabled = s.left === 0;
       b.append(el('b', '', timeF.format(s.start_ts)));
-      b.append(el('small', s.left <= 2 && s.capacity > 1 ? 'few' : '', s.capacity === 1 ? t('available') : t('spotsLeft', s.left)));
+      b.append(el('small', s.left > 0 && s.left <= 2 && s.capacity > 1 ? 'few' : '', s.left === 0 ? t('full') : t('spotsLeft', s.left)));
       if (s.note) b.append(el('small', '', s.note));
       b.onclick = () => {
         chosen = s; renderTimes(list); showSummary();
