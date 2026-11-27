@@ -135,13 +135,14 @@ function sendConfirmation(b, slot) {
 }
 
 // Create a booking safely (seat check + insert in one transaction, so a slot can never be overbooked).
-// kind 'public' = website visitors, 'extra' = reception only. graceMs lets reception book a slot that just started.
-function createBooking({ slotId, name, phone, place, lang, source, kind, graceMs = 0 }) {
+// kinds: which slot types may be booked. Website visitors: ['public']. Reception: ['public','extra'] (extra slots are hidden from visitors).
+// graceMs lets reception book a slot that just started.
+function createBooking({ slotId, name, phone, place, lang, source, kinds, graceMs = 0 }) {
   const token = crypto.randomBytes(16).toString('hex');
   try {
     db.exec('BEGIN IMMEDIATE');
     const slot = slotRow.get(slotId);
-    if (!slot || slot.kind !== kind || slot.start_ts <= Date.now() - graceMs) throw new Error('This slot is no longer available.');
+    if (!slot || !kinds.includes(slot.kind) || slot.start_ts <= Date.now() - graceMs) throw new Error('This slot is no longer available.');
     if (!bookableDates().includes(slot.date)) throw new Error('Appointments can only be booked for today and tomorrow.');
     if (!centerOpenOn(slot.center, slot.date)) throw new Error(`${centerName(slot.center)} is open only on ${centerDays(slot.center)}.`);
     if (slot.booked >= slot.capacity) throw new Error('Sorry, this slot was just taken. Please pick another.');
@@ -188,7 +189,7 @@ app.post('/api/book', limit(10, 3600 * 1000), (req, res) => {
   const d = readBookingBody(req);
   if (d.error) return res.status(400).json({ error: d.error });
   try {
-    const { b, slot } = createBooking({ ...d, source: 'web', kind: 'public' });
+    const { b, slot } = createBooking({ ...d, source: 'web', kinds: ['public'] });
     sendConfirmation(b, slot); adminAlert(b, slot);
     res.json({ ok: true, bookingId: b.id, token: b.token, manageUrl: manageUrl(b.token), when: fmt(slot, d.lang) });
   } catch (e) { res.status(409).json({ error: e.message }); }
@@ -347,19 +348,23 @@ app.delete('/api/admin/bookings/:id', requireAdmin, (req, res) => {
   cancelByStaff(b); res.json({ ok: true });
 });
 
-// ---------- reception API: books the extra slots that visitors never see ----------
+// ---------- reception API: books normal slots AND the extra slots that visitors never see ----------
+// Slots per hour = 60 / minutes per slot (whole slots only), when the slot has a minutes-per-slot value.
+const perHourOf = (min) => (min > 0 && min <= 60 ? Math.floor(60 / min) : null);
 app.get('/api/reception/slots', requireStaff, (req, res) => {
   const rows = db.prepare(`
-    SELECT s.id, s.date, s.time, s.start_ts, s.duration_min, s.capacity, s.note, s.center,
+    SELECT s.id, s.date, s.time, s.start_ts, s.duration_min, s.capacity, s.note, s.center, s.kind,
       (SELECT COUNT(*) FROM bookings b WHERE b.slot_id = s.id AND b.status='booked') AS booked
-    FROM slots s WHERE s.kind='extra' AND s.start_ts > ? AND s.date IN (?, ?) ORDER BY s.start_ts`).all(Date.now() - 30 * 60 * 1000, ...bookableDates());
-  res.json(rows.map((r) => ({ ...r, left: Math.max(0, r.capacity - r.booked), level: crowd(r.date, r.time)?.level || null })));
+    FROM slots s WHERE s.kind IN ('public','extra') AND s.start_ts > ? AND s.date IN (?, ?) ORDER BY s.start_ts, s.kind DESC`).all(Date.now() - 30 * 60 * 1000, ...bookableDates());
+  res.json(rows
+    .filter((r) => centerOpenOn(r.center, r.date))
+    .map((r) => ({ ...r, left: Math.max(0, r.capacity - r.booked), level: crowd(r.date, r.time)?.level || null, perHour: perHourOf(r.duration_min) })));
 });
 app.post('/api/reception/book', requireStaff, (req, res) => {
   const d = readBookingBody(req);
   if (d.error) return res.status(400).json({ error: d.error });
   try {
-    const { b, slot } = createBooking({ ...d, source: 'reception', kind: 'extra', graceMs: 30 * 60 * 1000 });
+    const { b, slot } = createBooking({ ...d, source: 'reception', kinds: ['public', 'extra'], graceMs: 30 * 60 * 1000 });
     sendConfirmation(b, slot); adminAlert(b, slot, ' (reception)');
     res.json({ ok: true, bookingId: b.id, when: fmt(slot, d.lang) });
   } catch (e) { res.status(409).json({ error: e.message }); }

@@ -68,6 +68,7 @@
           <div><b id="cPeople">–</b><span data-i18n="calcPeople"></span></div>
           <div><b id="cDay">–</b><span data-i18n="calcDay"></span></div>
         </div>
+        <div class="hint" id="formula" style="margin:-4px 0 10px"></div>
         <div id="planmsg"></div>
         <div id="plantable" class="hidden">
           <div class="hint" style="margin:0 0 8px" data-i18n="pickHours"></div>
@@ -160,6 +161,7 @@ function schedulePlan() { clearTimeout(planTimer); planTimer = setTimeout(loadPl
 async function loadPlan() {
   const date = $('date').value, m = Math.min(Math.max(parseInt($('dur').value) || 15, 5), 60), p = Math.min(Math.max(parseInt($('cap').value) || 1, 1), 100);
   $('cSlots').textContent = Math.floor(60 / m); $('cPeople').textContent = Math.floor(60 / m) * p;
+  $('formula').textContent = t('perHourText', m, Math.floor(60 / m), 60 / m);
   if (!date) { $('plantable').classList.add('hidden'); $('cDay').textContent = '–'; plan = null; return; }
   try { plan = await api(`/api/admin/plan?date=${date}&minutes=${m}&people=${p}`); } catch (e) { say($('planmsg'), e.message); return; }
   renderPlan();
@@ -281,7 +283,7 @@ function renderSlots() {
   }
 }
 
-window.onLang = () => { mkFmt(); document.title = t('aTitle'); renderBookings(); renderSlots(); if (plan) renderPlan(); updateCount(); };
+window.onLang = () => { mkFmt(); document.title = t('aTitle'); renderBookings(); renderSlots(); if (plan) renderPlan(); updateCount(); loadPlan(); };
 document.addEventListener('DOMContentLoaded', () => { document.title = t('aTitle'); loadPlan(); });
 if (token) { show(true); refresh().catch(() => show(false)); } else show(false);
 </script>

@@ -38,7 +38,7 @@ Object.assign(I18N.en, {
   leftover: (m) => `${m} min per hour is left over because the slot length does not divide 60.`,
   customTimes: 'Custom times (optional, replaces the table)', createSlots: 'Create slots', willCreate: (n) => `${n} slot(s) will be created`, pickHours: 'Tick the hours to create',
   extraTag: 'Extra', recTag: 'Reception', arrHere: 'Arrived', arrNo: 'Not coming', arrWait: 'Waiting', crowdNote: 'Usual crowd comes from the church hourly records. Expected = records scaled to the average day.',
-  rTitle: 'Reception', rLogin: 'Reception login', rExtra: 'Extra slots (hidden from visitors)', rNoExtra: 'No extra slots for today or tomorrow. Ask the admin to add some.',
+  rTitle: 'Reception', rLogin: 'Reception login', rExtra: 'Book a slot (normal and extra)', rNoExtra: 'No open slots for today or tomorrow. Ask the admin to add some.',
   rBookTitle: 'Book this walk-in', rLangLbl: 'WhatsApp message language', rBook: 'Book', rBooked: 'Booked. A WhatsApp confirmation was sent.', rList: 'Bookings today and tomorrow', rNoBk: 'No bookings yet.', rRefresh: 'Refresh',
   rNotSet: 'Reception login is not set up yet. Ask the admin.',
 });
@@ -50,7 +50,16 @@ Object.assign(I18N.ml, {
   leftover: (m) => `സമയദൈർഘ്യം 60-നെ ഹരിക്കാത്തതിനാൽ ഓരോ മണിക്കൂറിലും ${m} മിനിറ്റ് ബാക്കിയാകും.`,
   customTimes: 'സ്വന്തം സമയങ്ങൾ (ഓപ്ഷണൽ, പട്ടികയ്ക്ക് പകരം)', createSlots: 'സമയങ്ങൾ ഉണ്ടാക്കുക', willCreate: (n) => `${n} സമയം ഉണ്ടാക്കും`, pickHours: 'ഉണ്ടാക്കേണ്ട മണിക്കൂറുകൾ തിരഞ്ഞെടുക്കുക',
   extraTag: 'അധികം', recTag: 'റിസപ്ഷൻ', arrHere: 'എത്തി', arrNo: 'വരുന്നില്ല', arrWait: 'കാത്തിരിക്കുന്നു', crowdNote: 'സാധാരണ തിരക്ക് സഭയുടെ മണിക്കൂർ രേഖകളിൽ നിന്നാണ്. പ്രതീക്ഷ = രേഖകൾ ശരാശരി ദിവസത്തിലേക്ക് മാറ്റിയത്.',
-  rTitle: 'റിസപ്ഷൻ', rLogin: 'റിസപ്ഷൻ ലോഗിൻ', rExtra: 'അധിക സമയങ്ങൾ (സന്ദർശകർക്ക് കാണില്ല)', rNoExtra: 'ഇന്നോ നാളെയോ അധിക സമയങ്ങളില്ല. അഡ്മിനോട് ചേർക്കാൻ ആവശ്യപ്പെടുക.',
+  rTitle: 'റിസപ്ഷൻ', rLogin: 'റിസപ്ഷൻ ലോഗിൻ', rExtra: 'സമയം ബുക്ക് ചെയ്യുക (സാധാരണവും അധികവും)', rNoExtra: 'ഇന്നോ നാളെയോ ഒഴിവുള്ള സമയങ്ങളില്ല. അഡ്മിനോട് ചേർക്കാൻ ആവശ്യപ്പെടുക.',
   rBookTitle: 'ഈ വാക്ക്-ഇൻ ബുക്ക് ചെയ്യുക', rLangLbl: 'വാട്സ്ആപ്പ് സന്ദേശത്തിന്റെ ഭാഷ', rBook: 'ബുക്ക് ചെയ്യുക', rBooked: 'ബുക്ക് ചെയ്തു. വാട്സ്ആപ്പ് സ്ഥിരീകരണം അയച്ചു.', rList: 'ഇന്നത്തെയും നാളത്തെയും ബുക്കിംഗുകൾ', rNoBk: 'ഇതുവരെ ബുക്കിംഗുകളില്ല.', rRefresh: 'പുതുക്കുക',
   rNotSet: 'റിസപ്ഷൻ ലോഗിൻ ഇതുവരെ ഒരുക്കിയിട്ടില്ല. അഡ്മിനോട് ചോദിക്കുക.',
+});
+
+Object.assign(I18N.en, {
+  perHourText: (m, n, raw) => `60 ÷ ${m} = ${raw}${raw !== n ? ` → ${n} whole slots` : ''} per hour`,
+  freeCount: (n) => `${n} free`, normalTag: 'Normal',
+});
+Object.assign(I18N.ml, {
+  perHourText: (m, n, raw) => `60 ÷ ${m} = ${raw}${raw !== n ? ` → ${n} പൂർണ്ണ സമയങ്ങൾ` : ''} (ഒരു മണിക്കൂറിൽ)`,
+  freeCount: (n) => `${n} ഒഴിവ്`, normalTag: 'സാധാരണ',
 });

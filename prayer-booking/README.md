@@ -30,8 +30,9 @@ Requires Node 22.13+ (uses the built-in `node:sqlite`, no database to install).
 - **WhatsApp sequence for a booking**: confirmation (with the expected crowd), a reminder 1 hour before, a reminder 30 minutes before,
   and at the slot time "Are you here!!" with **I am here** / **NO** buttons. NO sends a link to change the booking slot.
   (A reminder is skipped when the booking was made too close to the time; the arrival question is not sent for bookings made in the last 10 minutes.)
-- **Reception** (`/reception.html`, password `RECEPTION_PASSWORD`): books **extra slots** for walk-ins. Extra slots are created by the admin
-  (Slot type = Extra) and are never shown to website visitors.
+- **Reception** (`/reception.html`, password `RECEPTION_PASSWORD`): books walk-ins into **normal slots and extra slots**. Extra slots are created by the admin
+  (Slot type = Extra) and are never shown to website visitors. Normal slots share their seats with the website, so a seat booked at reception is no longer free online.
+- **Slots per hour** = 60 ÷ minutes per slot (whole slots only, for example 60 ÷ 25 = 2.4 gives 2). Shown under each hour on the reception page and in the admin planner.
 - **Admin slot planner**: enter minutes per slot and people per slot to see slots per hour, people per hour and the capacity for the day,
   next to the usual crowd and the expected number of people for each hour. Tick the hours and create the whole day in one click.
 - Existing slots from before this change are treated as Kattakada.

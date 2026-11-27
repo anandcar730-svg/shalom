@@ -153,3 +153,7 @@ html{overflow-x:hidden}
 .pick{border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;padding:10px 14px;font:inherit;font-weight:600;cursor:pointer}
 .pick.sel{background:var(--brand);border-color:var(--brand);color:#fff}
 .pick.lv-red{border-left:6px solid var(--lv-red)}.pick.lv-orange{border-left:6px solid var(--lv-orange)}.pick.lv-green{border-left:6px solid var(--lv-green)}
+
+.pick.extra{border-style:dashed;border-color:#7a67d9}
+.pick.extra.sel{border-style:solid}
+.hourh + .hint{margin:-4px 0 8px}

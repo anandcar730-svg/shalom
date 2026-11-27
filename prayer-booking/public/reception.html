@@ -87,23 +87,38 @@ async function refresh() {
   renderSlots(); renderBookings();
 }
 
+const hourOnly = () => new Intl.DateTimeFormat(locale(), {hour:'numeric', hour12:true, timeZone: IST});
+const sumText = (s) => `${centerLabel(s.center)} · ${t(F.key.format(s.start_ts) === F.key.format(Date.now()) ? 'today' : 'tomorrow')} · ${F.time.format(s.start_ts)}` + (s.kind === 'extra' ? ' · ' + t('extraTag') : '');
 function renderSlots() {
   const box = $('slots'); box.replaceChildren();
   if (!slots.length) { box.append(mk('p', 'empty', t('rNoExtra'))); return; }
-  const today = F.key.format(Date.now());
+  const today = F.key.format(Date.now()), hf = hourOnly();
   const groups = new Map();
   for (const s of slots) { const k = s.center + '|' + F.key.format(s.start_ts); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(s); }
   for (const [k, list] of groups) {
     const [c, d] = k.split('|');
     box.append(mk('div', 'dayh', `${centerLabel(c)} · ${t(d === today ? 'today' : 'tomorrow')}`));
-    const row = mk('div', 'pickrow');
-    for (const s of list) {
-      const b = mk('button', 'pick' + (s.level ? ' lv-' + s.level : '') + (chosen && chosen.id === s.id ? ' sel' : ''), `${F.time.format(s.start_ts)} · ${s.left === 0 ? t('full') : t('spotsLeft', s.left)}`);
-      b.type = 'button'; b.disabled = s.left === 0;
-      b.onclick = () => { chosen = s; $('sum').textContent = `${centerLabel(s.center)} · ${t(F.key.format(s.start_ts) === today ? 'today' : 'tomorrow')} · ${F.time.format(s.start_ts)}`; $('bform').classList.remove('hidden'); $('out').className = ''; $('out').textContent = ''; renderSlots(); $('name').focus(); };
-      row.append(b);
+    const byHour = new Map();
+    for (const s of list) { const h = parseInt(s.time); if (!byHour.has(h)) byHour.set(h, []); byHour.get(h).push(s); }
+    for (const [, group] of byHour) {
+      const first = group[0], start = first.start_ts - Number(first.time.slice(3, 5)) * 60000;
+      const head = mk('div', 'hourh'); head.append(mk('span', '', `${hf.format(start)} – ${hf.format(start + 3600000)}`));
+      if (first.level) head.append(mk('span', 'lvchip ' + first.level, t(LV[first.level])));
+      box.append(head);
+      // slots in this hour = 60 / minutes per slot (when the minutes per slot is known)
+      const withMin = group.find((s) => s.perHour);
+      const free = group.reduce((n, s) => n + s.left, 0);
+      box.append(mk('div', 'hint', (withMin ? t('perHourText', withMin.duration_min, withMin.perHour, 60 / withMin.duration_min) + ' · ' : '') + t('freeCount', free)));
+      const row = mk('div', 'pickrow');
+      for (const s of group) {
+        const label = `${F.time.format(s.start_ts)} · ${s.left === 0 ? t('full') : t('spotsLeft', s.left)}` + (s.kind === 'extra' ? ' · ' + t('extraTag') : '');
+        const b = mk('button', 'pick' + (s.level ? ' lv-' + s.level : '') + (s.kind === 'extra' ? ' extra' : '') + (chosen && chosen.id === s.id ? ' sel' : ''), label);
+        b.type = 'button'; b.disabled = s.left === 0;
+        b.onclick = () => { chosen = s; $('sum').textContent = sumText(s); $('bform').classList.remove('hidden'); $('out').className = ''; $('out').textContent = ''; renderSlots(); $('name').focus(); };
+        row.append(b);
+      }
+      box.append(row);
     }
-    box.append(row);
   }
 }
 
@@ -150,7 +165,7 @@ function renderBookings() {
   }
 }
 
-window.onLang = () => { mkFmt(); document.title = t('rTitle'); renderSlots(); renderBookings(); if (chosen) $('sum').textContent = `${centerLabel(chosen.center)} · ${F.time.format(chosen.start_ts)}`; };
+window.onLang = () => { mkFmt(); document.title = t('rTitle'); renderSlots(); renderBookings(); if (chosen) $('sum').textContent = sumText(chosen); };
 document.addEventListener('DOMContentLoaded', () => { document.title = t('rTitle'); });
 if (token) { show(true); refresh().catch(() => show(false)); } else show(false);
 </script>
