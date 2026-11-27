@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Malayalam:wght@400;500;600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <script src="i18n.js"></script>
+<script src="i18n-extra.js"></script>
 <script src="admin-i18n.js"></script>
 </head>
 <body>
@@ -41,10 +42,10 @@
       <div id="bkList"></div>
     </section>
 
-    <!-- MANAGE SLOTS -->
+    <!-- MANAGE SLOTS: planner -->
     <section id="tab-slots" class="hidden">
       <form id="add" class="card">
-        <h2 style="margin-top:0" data-i18n="addSlots"></h2>
+        <h2 style="margin-top:0" data-i18n="planTitle"></h2>
         <label for="center" data-i18n="center"></label>
         <select id="center">
           <option value="kattakada" data-i18n="cKattakada"></option>
@@ -54,17 +55,37 @@
         <div class="hint" data-i18n="centerHint"></div>
         <div class="row">
           <div><label for="date" data-i18n="date"></label><input id="date" type="date" required></div>
-          <div><label for="atimes" data-i18n="times"></label><input id="atimes" required data-i18n-ph="timesPh"></div>
+          <div><label for="kind" data-i18n="kind"></label>
+            <select id="kind"><option value="public" data-i18n="kindPublic"></option><option value="extra" data-i18n="kindExtra"></option></select></div>
         </div>
         <div class="row">
-          <div><label for="dur" data-i18n="dur"></label><input id="dur" type="number" min="5" max="240" value="30"></div>
-          <div><label for="cap" data-i18n="cap"></label><input id="cap" type="number" min="1" max="100" value="1"></div>
+          <div><label for="dur" data-i18n="dur"></label><input id="dur" type="number" min="5" max="60" value="15"></div>
+          <div><label for="cap" data-i18n="cap"></label><input id="cap" type="number" min="1" max="100" value="2"></div>
         </div>
+
+        <div class="calc">
+          <div><b id="cSlots">–</b><span data-i18n="calcPer"></span></div>
+          <div><b id="cPeople">–</b><span data-i18n="calcPeople"></span></div>
+          <div><b id="cDay">–</b><span data-i18n="calcDay"></span></div>
+        </div>
+        <div id="planmsg"></div>
+        <div id="plantable" class="hidden">
+          <div class="hint" style="margin:0 0 8px" data-i18n="pickHours"></div>
+          <div class="tscroll"><table class="ptable">
+            <thead><tr><th></th><th data-i18n="colHour"></th><th data-i18n="colCrowd"></th><th data-i18n="colPeople"></th><th data-i18n="colExpected"></th><th data-i18n="colSlots"></th><th data-i18n="colCap"></th><th data-i18n="colCheck"></th></tr></thead>
+            <tbody id="pbody"></tbody>
+            <tfoot><tr><td></td><td data-i18n="calcDay"></td><td></td><td></td><td id="tExp"></td><td id="tSlots"></td><td id="tCap"></td><td></td></tr></tfoot>
+          </table></div>
+          <div class="hint" id="pnote"></div>
+          <div class="hint" data-i18n="crowdNote"></div>
+        </div>
+
+        <label for="atimes" data-i18n="customTimes"></label><input id="atimes" data-i18n-ph="timesPh">
         <div class="row">
           <div><label for="weeks" data-i18n="weeks"></label><input id="weeks" type="number" min="1" max="26" value="1"></div>
           <div><label for="note" data-i18n="note"></label><input id="note" maxlength="200" data-i18n-ph="notePh"></div>
         </div>
-        <button class="btn" data-i18n="addBtn"></button><div id="aerr"></div>
+        <button class="btn" id="addbtn" data-i18n="createSlots"></button><div id="aerr"></div>
       </form>
       <h2 data-i18n="slotsList"></h2>
       <div id="list"></div>
@@ -77,18 +98,21 @@
 const $ = (id) => document.getElementById(id);
 const mk = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
 const IST = 'Asia/Kolkata';
+const LV = {red: 'lvRed', orange: 'lvOrange', green: 'lvGreen'};
 let token = ''; try { token = sessionStorage.getItem('adm') || ''; } catch {}
-let slots = [], seg = 'up', lastMsg = null;
+let slots = [], seg = 'up', plan = null;
 
 const F = {};
 function mkFmt() {
   const L = locale();
   F.day = new Intl.DateTimeFormat(L, {weekday:'long', day:'numeric', month:'long', timeZone: IST});
   F.time = new Intl.DateTimeFormat(L, {hour:'numeric', minute:'2-digit', hour12:true, timeZone: IST});
+  F.hour = new Intl.DateTimeFormat(L, {hour:'numeric', hour12:true, timeZone: IST});
   F.full = new Intl.DateTimeFormat(L, {weekday:'short', day:'numeric', month:'short', hour:'numeric', minute:'2-digit', hour12:true, timeZone: IST});
   F.key = new Intl.DateTimeFormat('en-CA', {timeZone: IST});
 }
 mkFmt();
+const hourText = (h) => { const d = new Date(`2000-01-01T${String(h).padStart(2,'0')}:00:00+05:30`).getTime(); return `${F.hour.format(d)} – ${F.hour.format(d + 3600000)}`; };
 const say = (el, text, ok) => { el.className = 'msg ' + (ok ? 'ok' : 'err'); el.textContent = text; };
 
 async function api(path, opts = {}) {
@@ -129,15 +153,58 @@ $('login').onsubmit = async (e) => {
   } catch (err) { say($('lerr'), err.status === 401 ? t('aWrongPw') : err.message); }
 };
 
+// ---------- planner: slots per hour from slot length + people per slot, next to the usual crowd ----------
+let planTimer = null;
+function schedulePlan() { clearTimeout(planTimer); planTimer = setTimeout(loadPlan, 250); }
+['date', 'dur', 'cap'].forEach((id) => $(id).addEventListener('input', schedulePlan));
+async function loadPlan() {
+  const date = $('date').value, m = Math.min(Math.max(parseInt($('dur').value) || 15, 5), 60), p = Math.min(Math.max(parseInt($('cap').value) || 1, 1), 100);
+  $('cSlots').textContent = Math.floor(60 / m); $('cPeople').textContent = Math.floor(60 / m) * p;
+  if (!date) { $('plantable').classList.add('hidden'); $('cDay').textContent = '–'; plan = null; return; }
+  try { plan = await api(`/api/admin/plan?date=${date}&minutes=${m}&people=${p}`); } catch (e) { say($('planmsg'), e.message); return; }
+  renderPlan();
+}
+function renderPlan() {
+  $('planmsg').className = ''; $('planmsg').textContent = '';
+  if (!plan || !plan.open) {
+    $('plantable').classList.add('hidden'); $('cDay').textContent = '–';
+    if (plan) say($('planmsg'), t('closedDay'), false); return;
+  }
+  $('cSlots').textContent = plan.slotsPerHour; $('cPeople').textContent = plan.peoplePerHour; $('cDay').textContent = plan.totals.capacity;
+  const body = $('pbody'); const keep = new Set([...body.querySelectorAll('input:checked')].map((i) => +i.dataset.h)); const first = !body.children.length;
+  body.replaceChildren();
+  for (const h of plan.hours) {
+    const tr = mk('tr'); const cb = mk('input'); cb.type = 'checkbox'; cb.dataset.h = h.hour; cb.checked = first || keep.has(h.hour); cb.addEventListener('change', updateCount);
+    const td0 = mk('td'); td0.append(cb);
+    const chip = mk('span', 'lvchip ' + h.level, t(LV[h.level]));
+    tr.append(td0, mk('td', '', hourText(h.hour)), (() => { const d = mk('td'); d.append(chip); return d; })(), mk('td', '', h.people), mk('td', '', h.expected), mk('td', '', h.slots), mk('td', '', h.capacity),
+      mk('td', h.short ? 'short' : 'ok', h.short ? t('shortBy', h.short) : t('enough')));
+    body.append(tr);
+  }
+  $('tExp').textContent = plan.totals.expected; $('tSlots').textContent = plan.totals.slots; $('tCap').textContent = plan.totals.capacity;
+  const lo = plan.hours[0]?.leftover; $('pnote').textContent = lo ? t('leftover', lo) : '';
+  $('plantable').classList.remove('hidden'); updateCount();
+}
+function chosenTimes() {
+  const custom = $('atimes').value.split(',').map((s) => s.trim()).filter(Boolean).map((s) => /^\d:\d{2}$/.test(s) ? '0' + s : s);
+  if (custom.length) return custom;
+  if (!plan || !plan.open) return [];
+  const on = new Set([...$('pbody').querySelectorAll('input:checked')].map((i) => +i.dataset.h));
+  return plan.hours.filter((h) => on.has(h.hour)).flatMap((h) => h.times);
+}
+function updateCount() { const n = chosenTimes().length; $('addbtn').textContent = n ? `${t('createSlots')} (${n})` : t('createSlots'); }
+$('atimes').addEventListener('input', updateCount);
+
 $('add').onsubmit = async (e) => {
   e.preventDefault();
   try {
-    const times = $('atimes').value.split(',').map(s => s.trim()).filter(Boolean).map(s => /^\d:\d{2}$/.test(s) ? '0' + s : s);
     const wd = new Date($('date').value + 'T12:00:00Z').getUTCDay();
     const okDays = {kattakada: [1, 2, 4, 5], thirumala: [2, 6], poovar: [2]}[$('center').value];
     if (!okDays.includes(wd)) { say($('aerr'), t('errMonTue')); return; }
+    const times = chosenTimes(); if (!times.length) { say($('aerr'), t('createSlots') + ': 0'); return; }
     const d = await api('/api/admin/slots', {method:'POST', body: JSON.stringify({
-      center: $('center').value, date: $('date').value, times, duration_min: $('dur').value, capacity: $('cap').value, repeatWeeks: $('weeks').value, note: $('note').value})});
+      center: $('center').value, kind: $('kind').value, date: $('date').value, times, duration_min: $('dur').value, capacity: $('cap').value,
+      repeatWeeks: $('weeks').value, note: $('note').value})});
     say($('aerr'), t('added', d.created), true); refresh();
   } catch (err) { say($('aerr'), err.message); }
 };
@@ -146,6 +213,11 @@ async function refresh() { slots = await api('/api/admin/slots'); renderBookings
 
 // ---------- bookings view ----------
 function waLink(phone) { const a = mk('a', '', '+' + phone); a.href = 'https://wa.me/' + phone; a.target = '_blank'; a.rel = 'noopener'; a.title = t('chat'); return a; }
+function arrChip(b, past) {
+  if (b.arrival === 'here') return mk('span', 'arr here', '✓ ' + t('arrHere'));
+  if (b.arrival === 'no') return mk('span', 'arr no', '✕ ' + t('arrNo'));
+  return past ? mk('span', 'arr wait', '… ' + t('arrWait')) : null;
+}
 
 function renderBookings() {
   const fc = $('fcenter').value;
@@ -163,19 +235,26 @@ function renderBookings() {
   for (const s of list) {
     const k = F.key.format(s.start_ts);
     if (k !== lastDay) { box.append(mk('div', 'dayh', F.day.format(s.start_ts))); lastDay = k; }
-    const c = mk('div', 'bkcard'); if (s.past) c.style.opacity = .7;
-    const head = mk('div', 'slothead');
-    const left = mk('div'); left.append(mk('span', 'time-big', F.time.format(s.start_ts)), document.createTextNode(' '), mk('span', 'centertag', centerLabel(s.center)), document.createTextNode(' '), mk('span', 'pill', `${t('people', s.bookings.length)} · ${s.duration_min} ${t('minShort')}` + (s.note ? ' · ' + s.note : '')));
+    const c = mk('div', 'bkcard'); if (s.past) c.style.opacity = .85;
+    const head = mk('div', 'slothead'); const left = mk('div');
+    left.append(mk('span', 'time-big', F.time.format(s.start_ts)), mk('span', 'centertag', centerLabel(s.center)));
+    if (s.kind === 'extra') left.append(mk('span', 'kindtag', t('extraTag')));
+    if (s.level) left.append(mk('span', 'lvchip ' + s.level, t(LV[s.level])));
+    left.append(mk('span', 'pill', `${t('people', s.bookings.length)} · ${s.duration_min} ${t('minShort')}` + (s.note ? ' · ' + s.note : '')));
     head.append(left); c.append(head);
     for (const b of s.bookings) {
       const r = mk('div', 'bk'); const who = mk('div', 'who');
       who.append(mk('b', '', b.name)); const sm = mk('small'); sm.append(t('phoneLbl') + ': ', waLink(b.phone)); who.append(sm);
       if (b.place) who.append(mk('div', 'reqtxt', '🏠 ' + t('placeLbl') + ': ' + b.place));
+      const tags = mk('div'); tags.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-top:6px';
+      if (b.source === 'reception') tags.append(mk('span', 'kindtag', t('recTag')));
+      const ac = arrChip(b, s.past); if (ac) tags.append(ac);
+      if (tags.children.length) who.append(tags);
       r.append(who);
       if (!s.past) {
         const x = mk('button', 'btn danger sm');
         confirmBtn(x, t('cancel'), t('confirmCancel'), async () => { await api('/api/admin/bookings/' + b.id, {method:'DELETE'}); refresh(); });
-        x.title = t('confirmCancel'); r.append(x);
+        r.append(x);
       }
       c.append(r);
     }
@@ -192,16 +271,18 @@ function renderSlots() {
   for (const s of all) {
     const c = mk('div', 'card'); c.style.opacity = s.past ? .55 : 1;
     const head = mk('div', 'slothead');
-    const info = mk('div'); info.append(mk('b', '', F.full.format(s.start_ts) + (s.note ? ' – ' + s.note : '')), document.createTextNode(' '), mk('span', 'centertag', centerLabel(s.center)), document.createTextNode(' '),
-      mk('span', 'pill', `${s.bookings.length}/${s.capacity} ${t('booked')} · ${s.duration_min} ${t('minShort')}`));
+    const info = mk('div'); info.append(mk('b', '', F.full.format(s.start_ts) + (s.note ? ' – ' + s.note : '')), mk('span', 'centertag', centerLabel(s.center)));
+    if (s.kind === 'extra') info.append(mk('span', 'kindtag', t('extraTag')));
+    if (s.level) info.append(mk('span', 'lvchip ' + s.level, t(LV[s.level])));
+    info.append(mk('span', 'pill', `${s.bookings.length}/${s.capacity} ${t('booked')} · ${s.duration_min} ${t('minShort')}`));
     const del = mk('button', 'btn danger sm');
     confirmBtn(del, t('delSlot'), s.bookings.length ? t('confirmDelSlotN', s.bookings.length) : t('confirmDelSlot'), async () => { await api('/api/admin/slots/' + s.id, {method:'DELETE'}); refresh(); });
     head.append(info, del); c.append(head); box.append(c);
   }
 }
 
-window.onLang = () => { mkFmt(); document.title = t('aTitle'); renderBookings(); renderSlots(); };
-document.addEventListener('DOMContentLoaded', () => { document.title = t('aTitle'); });
+window.onLang = () => { mkFmt(); document.title = t('aTitle'); renderBookings(); renderSlots(); if (plan) renderPlan(); updateCount(); };
+document.addEventListener('DOMContentLoaded', () => { document.title = t('aTitle'); loadPlan(); });
 if (token) { show(true); refresh().catch(() => show(false)); } else show(false);
 </script>
 </body>

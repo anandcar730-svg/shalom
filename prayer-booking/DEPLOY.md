@@ -126,6 +126,22 @@ Certbot edits the Nginx config to redirect HTTP→HTTPS and sets up auto-renewal
    approved, add `META_USE_TEMPLATES=true` to `.env` and restart. Until then, set it to `false` and
    only people who messaged your number in the last 24 hours receive messages.
 
+## 7b. Webhook (needed for the "I am here" / "NO" buttons)
+The app sends the arrival question with two buttons. When a person taps one, Meta sends the tap to your server.
+1. In `.env` set `META_VERIFY_TOKEN` to any long random text you invent, and `META_APP_SECRET` to the **App secret**
+   (Meta app dashboard, **App settings**, **Basic**, **App secret**, click Show). Restart the app.
+2. In the Meta app dashboard open **WhatsApp**, then **Configuration**, find **Webhook**, click **Edit**:
+   - **Callback URL**: `https://pray.shalomchurch.co.in/webhook` (your real domain)
+   - **Verify token**: the same text as `META_VERIFY_TOKEN`
+   - Click **Verify and save**. (The app answers Meta's check automatically.)
+3. Under **Webhook fields**, subscribe to **messages**.
+4. The page needs HTTPS (see step 6) and the app must be running, or "Verify and save" will fail.
+Meta only delivers real customer messages to the webhook once the app is **Published (Live)**.
+
+## 7c. Reception account
+Set `RECEPTION_PASSWORD` in `.env` (different from `ADMIN_PASSWORD`) and restart. Reception opens
+`https://pray.shalomchurch.co.in/reception.html`. The admin creates extra slots (Manage slots, Slot type = Extra).
+
 ## 8. Verify end to end
 1. Open `https://pray.shalomchurch.co.in/admin.html`, log in, add a slot for a few minutes from now.
 2. Book it from `https://pray.shalomchurch.co.in/` using your own WhatsApp number.

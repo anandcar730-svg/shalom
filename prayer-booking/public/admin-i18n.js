@@ -28,3 +28,29 @@ Object.assign(I18N.ml, {
   center: 'പ്രാർത്ഥനാ കേന്ദ്രം', centerHint: 'കാട്ടാക്കട: തിങ്കൾ, ചൊവ്വ, വ്യാഴം, വെള്ളി. തിരുമല: ചൊവ്വ, ശനി. പൂവാർ: ചൊവ്വ. തലേദിവസം മുതൽ ബുക്ക് ചെയ്യാം.', errMonTue: 'ആ ദിവസം ഈ കേന്ദ്രം തുറക്കില്ല. കാട്ടാക്കട: തിങ്കൾ, ചൊവ്വ, വ്യാഴം, വെള്ളി. തിരുമല: ചൊവ്വ, ശനി. പൂവാർ: ചൊവ്വ മാത്രം.',
   allCenters: 'എല്ലാ കേന്ദ്രങ്ങളും', placeLbl: 'സ്ഥലം',
 });
+
+// ---- planner, extra slots, arrival status, reception ----
+Object.assign(I18N.en, {
+  planTitle: 'Plan slots from the crowd data', kind: 'Slot type', kindPublic: 'Public (website visitors)', kindExtra: 'Extra (reception only)',
+  calcPer: 'Slots per hour', calcPeople: 'People per hour', calcDay: 'Capacity for the day', calcNeed: 'Expected people (day)',
+  colHour: 'Hour', colCrowd: 'Usual crowd', colPeople: 'Records', colExpected: 'Expected', colSlots: 'Slots', colCap: 'Capacity', colCheck: 'Check',
+  enough: 'Enough', shortBy: (n) => `Short by ${n}`, closedDay: 'There is no crowd data for this weekday, so no hours are suggested. Type your own times below.',
+  leftover: (m) => `${m} min per hour is left over because the slot length does not divide 60.`,
+  customTimes: 'Custom times (optional, replaces the table)', createSlots: 'Create slots', willCreate: (n) => `${n} slot(s) will be created`, pickHours: 'Tick the hours to create',
+  extraTag: 'Extra', recTag: 'Reception', arrHere: 'Arrived', arrNo: 'Not coming', arrWait: 'Waiting', crowdNote: 'Usual crowd comes from the church hourly records. Expected = records scaled to the average day.',
+  rTitle: 'Reception', rLogin: 'Reception login', rExtra: 'Extra slots (hidden from visitors)', rNoExtra: 'No extra slots for today or tomorrow. Ask the admin to add some.',
+  rBookTitle: 'Book this walk-in', rLangLbl: 'WhatsApp message language', rBook: 'Book', rBooked: 'Booked. A WhatsApp confirmation was sent.', rList: 'Bookings today and tomorrow', rNoBk: 'No bookings yet.', rRefresh: 'Refresh',
+  rNotSet: 'Reception login is not set up yet. Ask the admin.',
+});
+Object.assign(I18N.ml, {
+  planTitle: 'തിരക്കിന്റെ കണക്കനുസരിച്ച് സമയങ്ങൾ ഒരുക്കുക', kind: 'സമയത്തിന്റെ തരം', kindPublic: 'പൊതു (വെബ്സൈറ്റ്)', kindExtra: 'അധികം (റിസപ്ഷൻ മാത്രം)',
+  calcPer: 'ഒരു മണിക്കൂറിലെ സമയങ്ങൾ', calcPeople: 'ഒരു മണിക്കൂറിലെ ആളുകൾ', calcDay: 'ദിവസത്തെ ആകെ ശേഷി', calcNeed: 'പ്രതീക്ഷിക്കുന്ന ആളുകൾ (ദിവസം)',
+  colHour: 'മണിക്കൂർ', colCrowd: 'സാധാരണ തിരക്ക്', colPeople: 'രേഖകൾ', colExpected: 'പ്രതീക്ഷ', colSlots: 'സമയങ്ങൾ', colCap: 'ശേഷി', colCheck: 'പരിശോധന',
+  enough: 'മതി', shortBy: (n) => `${n} കുറവ്`, closedDay: 'ഈ ദിവസത്തിന് തിരക്ക് കണക്കില്ല, അതിനാൽ മണിക്കൂറുകൾ നിർദ്ദേശിക്കുന്നില്ല. താഴെ സ്വന്തം സമയങ്ങൾ നൽകുക.',
+  leftover: (m) => `സമയദൈർഘ്യം 60-നെ ഹരിക്കാത്തതിനാൽ ഓരോ മണിക്കൂറിലും ${m} മിനിറ്റ് ബാക്കിയാകും.`,
+  customTimes: 'സ്വന്തം സമയങ്ങൾ (ഓപ്ഷണൽ, പട്ടികയ്ക്ക് പകരം)', createSlots: 'സമയങ്ങൾ ഉണ്ടാക്കുക', willCreate: (n) => `${n} സമയം ഉണ്ടാക്കും`, pickHours: 'ഉണ്ടാക്കേണ്ട മണിക്കൂറുകൾ തിരഞ്ഞെടുക്കുക',
+  extraTag: 'അധികം', recTag: 'റിസപ്ഷൻ', arrHere: 'എത്തി', arrNo: 'വരുന്നില്ല', arrWait: 'കാത്തിരിക്കുന്നു', crowdNote: 'സാധാരണ തിരക്ക് സഭയുടെ മണിക്കൂർ രേഖകളിൽ നിന്നാണ്. പ്രതീക്ഷ = രേഖകൾ ശരാശരി ദിവസത്തിലേക്ക് മാറ്റിയത്.',
+  rTitle: 'റിസപ്ഷൻ', rLogin: 'റിസപ്ഷൻ ലോഗിൻ', rExtra: 'അധിക സമയങ്ങൾ (സന്ദർശകർക്ക് കാണില്ല)', rNoExtra: 'ഇന്നോ നാളെയോ അധിക സമയങ്ങളില്ല. അഡ്മിനോട് ചേർക്കാൻ ആവശ്യപ്പെടുക.',
+  rBookTitle: 'ഈ വാക്ക്-ഇൻ ബുക്ക് ചെയ്യുക', rLangLbl: 'വാട്സ്ആപ്പ് സന്ദേശത്തിന്റെ ഭാഷ', rBook: 'ബുക്ക് ചെയ്യുക', rBooked: 'ബുക്ക് ചെയ്തു. വാട്സ്ആപ്പ് സ്ഥിരീകരണം അയച്ചു.', rList: 'ഇന്നത്തെയും നാളത്തെയും ബുക്കിംഗുകൾ', rNoBk: 'ഇതുവരെ ബുക്കിംഗുകളില്ല.', rRefresh: 'പുതുക്കുക',
+  rNotSet: 'റിസപ്ഷൻ ലോഗിൻ ഇതുവരെ ഒരുക്കിയിട്ടില്ല. അഡ്മിനോട് ചോദിക്കുക.',
+});

@@ -40,4 +40,15 @@ try { db.exec(`ALTER TABLE bookings ADD COLUMN lang TEXT NOT NULL DEFAULT 'en'`)
 try { db.exec(`ALTER TABLE slots ADD COLUMN center TEXT NOT NULL DEFAULT 'kattakada'`); } catch {}
 try { db.exec(`ALTER TABLE bookings ADD COLUMN place TEXT NOT NULL DEFAULT ''`); } catch {}
 
+// migrations: extra (reception-only) slots, booking source, reminders and arrival check
+for (const sql of [
+  `ALTER TABLE slots ADD COLUMN kind TEXT NOT NULL DEFAULT 'public'`,          // public | extra
+  `ALTER TABLE bookings ADD COLUMN source TEXT NOT NULL DEFAULT 'web'`,        // web | reception
+  `ALTER TABLE bookings ADD COLUMN arrival TEXT NOT NULL DEFAULT ''`,          // '' | here | no
+  `ALTER TABLE bookings ADD COLUMN arrival_at INTEGER`,
+  `ALTER TABLE bookings ADD COLUMN r1h INTEGER NOT NULL DEFAULT 0`,
+  `ALTER TABLE bookings ADD COLUMN r30 INTEGER NOT NULL DEFAULT 0`,
+  `ALTER TABLE bookings ADD COLUMN asked INTEGER NOT NULL DEFAULT 0`,
+]) { try { db.exec(sql); } catch {} }
+
 module.exports = db;

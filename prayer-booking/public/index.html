@@ -6,6 +6,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Malayalam:wght@400;500;600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <script src="i18n.js"></script>
+<script src="i18n-extra.js"></script>
 </head>
 <body>
 <header><strong>Shalom Church</strong><div class="hright"><a class="back opt" href="https://www.shalomchurch.co.in" data-i18n="back"></a><div class="lang"><button type="button" data-lang="en">EN</button><button type="button" data-lang="ml">മലയാളം</button></div></div></header>
@@ -27,6 +28,8 @@
 
   <div class="panel hidden" id="p2">
     <div class="step"><i>3</i> <span data-i18n="step3"></span></div>
+    <div class="legend"><span data-i18n="lvTitle"></span>:
+      <span class="lvchip green" data-i18n="lvGreen"></span><span class="lvchip orange" data-i18n="lvOrange"></span><span class="lvchip red" data-i18n="lvRed"></span></div>
     <div id="times"></div>
   </div>
 
@@ -114,17 +117,24 @@ function renderCenters() {
   }
 }
 
+const LV = {red: 'lvRed', orange: 'lvOrange', green: 'lvGreen'};
+const DOT = {red: '🔴', orange: '🟠', green: '🟢'};
 function renderTimes(list) {
   $('p2').classList.remove('hidden');
   const box = $('times'); box.replaceChildren();
-  const parts = [['morning', h => h < 12], ['afternoon', h => h >= 12 && h < 17], ['evening', h => h >= 17]];
-  for (const [label, test] of parts) {
-    const group = list.filter(s => test(parseInt(hourF.format(s.start_ts))));
-    if (!group.length) continue;
-    box.append(el('div', 'part', t(label)));
+  const hourOnly = new Intl.DateTimeFormat(locale(), {hour:'numeric', hour12:true, timeZone: IST});
+  // one block per hour (like the church's hourly records), colored by how busy that hour usually is
+  const byHour = new Map();
+  for (const s of list) { const h = parseInt(hourF.format(s.start_ts)); if (!byHour.has(h)) byHour.set(h, []); byHour.get(h).push(s); }
+  for (const [, group] of byHour) {
+    const start = group[0].start_ts - Number(group[0].time.slice(3, 5)) * 60000;
+    const head = el('div', 'hourh');
+    head.append(el('span', '', `${hourOnly.format(start)} – ${hourOnly.format(start + 3600000)}`));
+    if (group[0].level) head.append(el('span', 'lvchip ' + group[0].level, t(LV[group[0].level])));
+    box.append(head);
     const grid = el('div', 'times');
     for (const s of group) {
-      const b = el('button', 'time' + (chosen && chosen.id === s.id ? ' sel' : '')); b.type = 'button';
+      const b = el('button', 'time' + (s.level ? ' lv-' + s.level : '') + (chosen && chosen.id === s.id ? ' sel' : '')); b.type = 'button';
       b.append(el('b', '', timeF.format(s.start_ts)));
       b.append(el('small', s.left <= 2 && s.capacity > 1 ? 'few' : '', s.capacity === 1 ? t('available') : t('spotsLeft', s.left)));
       if (s.note) b.append(el('small', '', s.note));
@@ -141,7 +151,7 @@ function renderTimes(list) {
 function showSummary() {
   if (!chosen) return;
   $('sum').textContent = slotText(chosen);
-  const c = $('sumc'); c.textContent = '📍 ' + centerLabel(chosen.center);
+  const c = $('sumc'); c.textContent = '📍 ' + centerLabel(chosen.center) + (chosen.level ? '  ·  ' + DOT[chosen.level] + ' ' + t(LV[chosen.level]) : '');
 }
 
 function renderDone() {

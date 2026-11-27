@@ -13,6 +13,8 @@ Requires Node 22.13+ (uses the built-in `node:sqlite`, no database to install).
 
 - Public booking page: `/`
 - Admin page: `/admin.html` (password from `.env`)
+- Reception page: `/reception.html` (`RECEPTION_PASSWORD` in `.env`)
+- WhatsApp webhook: `/webhook` (for the I am here / NO buttons)
 - Cancel/view link (sent on WhatsApp): `/manage.html?t=<token>`
 
 ## Appointment rules
@@ -23,7 +25,15 @@ Requires Node 22.13+ (uses the built-in `node:sqlite`, no database to install).
   for booking on the day before and on the day itself, and not otherwise.
   The admin cannot add slots on other weekdays, and the server refuses such bookings even if a slot exists.
   Edit the `CENTERS` table in `server.js` (and `CENTERS` in `public/index.html`) to change names or days.
-- Reminders go out 2 hours before the appointment, only for bookings made 3+ hours ahead.
+- **Busy-hour colors**: every slot is colored from the church's hourly records (`crowd.js`): red = 10 or more people,
+  orange = 6 to 9, green = 5 or fewer, per weekday and hour. Shown on the website, in the admin page and in the booking message.
+- **WhatsApp sequence for a booking**: confirmation (with the expected crowd), a reminder 1 hour before, a reminder 30 minutes before,
+  and at the slot time "Are you here!!" with **I am here** / **NO** buttons. NO sends a link to change the booking slot.
+  (A reminder is skipped when the booking was made too close to the time; the arrival question is not sent for bookings made in the last 10 minutes.)
+- **Reception** (`/reception.html`, password `RECEPTION_PASSWORD`): books **extra slots** for walk-ins. Extra slots are created by the admin
+  (Slot type = Extra) and are never shown to website visitors.
+- **Admin slot planner**: enter minutes per slot and people per slot to see slots per hour, people per hour and the capacity for the day,
+  next to the usual crowd and the expected number of people for each hour. Tick the hours and create the whole day in one click.
 - Existing slots from before this change are treated as Kattakada.
 
 ## How it works

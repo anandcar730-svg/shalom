@@ -40,7 +40,11 @@ async function sendMetaTemplate(to, tpl) {
       messaging_product: 'whatsapp', to, type: 'template',
       template: {
         name: tpl.name, language: { code: tpl.lang || 'en' },
-        components: [{ type: 'body', parameters: (tpl.params || []).map((p) => ({ type: 'text', text: clean(p) })) }],
+        components: [
+          { type: 'body', parameters: (tpl.params || []).map((p) => ({ type: 'text', text: clean(p) })) },
+          // quick-reply buttons: the payload comes back to our webhook when the person taps one
+          ...(tpl.buttons || []).map((payload, i) => ({ type: 'button', sub_type: 'quick_reply', index: String(i), parameters: [{ type: 'payload', payload }] })),
+        ],
       },
     }),
   });

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Reception – Prayer Appointments</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Malayalam:wght@400;500;600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="i18n.js"></script>
+<script src="i18n-extra.js"></script>
+<script src="admin-i18n.js"></script>
+</head>
+<body>
+<header><strong data-i18n="rTitle"></strong><div class="hright"><div class="lang"><button type="button" data-lang="en">EN</button><button type="button" data-lang="ml">മലയാളം</button></div></div></header>
+<main class="page">
+  <form id="login" class="card">
+    <h2 style="margin-top:0" data-i18n="rLogin"></h2>
+    <label for="pw" data-i18n="aPw"></label><input id="pw" type="password" required autocomplete="current-password">
+    <button class="btn" data-i18n="aLoginBtn"></button><div id="lerr"></div>
+  </form>
+
+  <div id="app" class="hidden">
+    <div class="card">
+      <h2 style="margin-top:0" data-i18n="rExtra"></h2>
+      <div class="legend"><span data-i18n="lvTitle"></span>:
+        <span class="lvchip green" data-i18n="lvGreen"></span><span class="lvchip orange" data-i18n="lvOrange"></span><span class="lvchip red" data-i18n="lvRed"></span></div>
+      <div id="slots"></div>
+
+      <form id="bform" class="hidden" novalidate>
+        <div class="summary" style="margin-top:14px"><span data-i18n="rBookTitle"></span><b id="sum"></b></div>
+        <label for="name" data-i18n="name"></label><input id="name" maxlength="80" autocomplete="off">
+        <label for="phone" data-i18n="phone"></label>
+        <div class="phone"><div class="cc">+91</div><input id="phone" type="tel" inputmode="numeric" autocomplete="off" placeholder="94003 18000"></div>
+        <label for="place" data-i18n="place"></label><input id="place" maxlength="80" autocomplete="off">
+        <label for="lang" data-i18n="rLangLbl"></label>
+        <select id="lang"><option value="en">English</option><option value="ml">മലയാളം</option></select>
+        <button class="btn" id="go" data-i18n="rBook"></button>
+        <div id="out"></div>
+      </form>
+    </div>
+
+    <div class="slothead" style="margin:22px 0 6px"><h2 style="margin:0" data-i18n="rList"></h2><button class="btn sm ghost" id="refresh" type="button" data-i18n="rRefresh"></button></div>
+    <div id="bk"></div>
+    <button class="btn danger sm" id="logout" style="margin-top:30px" data-i18n="aLogout"></button>
+  </div>
+</main>
+<script>
+const $ = (id) => document.getElementById(id);
+const mk = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+const IST = 'Asia/Kolkata';
+const LV = {red: 'lvRed', orange: 'lvOrange', green: 'lvGreen'};
+let token = ''; try { token = sessionStorage.getItem('rec') || ''; } catch {}
+let slots = [], bookings = [], chosen = null, timer = null;
+
+const F = {};
+function mkFmt() {
+  const L = locale();
+  F.time = new Intl.DateTimeFormat(L, {hour:'numeric', minute:'2-digit', hour12:true, timeZone: IST});
+  F.key = new Intl.DateTimeFormat('en-CA', {timeZone: IST});
+}
+mkFmt();
+const say = (el, text, ok) => { el.className = 'msg ' + (ok ? 'ok' : 'err'); el.textContent = text; };
+
+async function api(path, opts = {}) {
+  const r = await fetch(path, {...opts, headers: {'Content-Type':'application/json', Authorization:'Bearer ' + token}});
+  const d = await r.json().catch(() => ({}));
+  if (r.status === 401 && path !== '/api/reception/login') { logout(); throw new Error(t('aExpired')); }
+  if (!r.ok) { const e = new Error(d.error || 'Error'); e.status = r.status; throw e; }
+  return d;
+}
+function show(on) { $('login').classList.toggle('hidden', on); $('app').classList.toggle('hidden', !on); clearInterval(timer); if (on) timer = setInterval(() => refresh().catch(() => {}), 30000); }
+function logout() { token = ''; try { sessionStorage.removeItem('rec'); } catch {} show(false); }
+$('logout').onclick = logout;
+$('refresh').onclick = () => refresh().catch(() => {});
+
+$('login').onsubmit = async (e) => {
+  e.preventDefault();
+  try {
+    const d = await api('/api/reception/login', {method:'POST', body: JSON.stringify({password: $('pw').value})});
+    token = d.token; try { sessionStorage.setItem('rec', token); } catch {} $('pw').value = ''; $('lerr').className = ''; $('lerr').textContent = ''; show(true); refresh();
+  } catch (err) { say($('lerr'), err.status === 503 ? t('rNotSet') : err.status === 401 ? t('aWrongPw') : err.message); }
+};
+
+async function refresh() {
+  [slots, bookings] = await Promise.all([api('/api/reception/slots'), api('/api/reception/bookings')]);
+  if (chosen && !slots.some((s) => s.id === chosen.id && s.left > 0)) { chosen = null; $('bform').classList.add('hidden'); }
+  renderSlots(); renderBookings();
+}
+
+function renderSlots() {
+  const box = $('slots'); box.replaceChildren();
+  if (!slots.length) { box.append(mk('p', 'empty', t('rNoExtra'))); return; }
+  const today = F.key.format(Date.now());
+  const groups = new Map();
+  for (const s of slots) { const k = s.center + '|' + F.key.format(s.start_ts); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(s); }
+  for (const [k, list] of groups) {
+    const [c, d] = k.split('|');
+    box.append(mk('div', 'dayh', `${centerLabel(c)} · ${t(d === today ? 'today' : 'tomorrow')}`));
+    const row = mk('div', 'pickrow');
+    for (const s of list) {
+      const b = mk('button', 'pick' + (s.level ? ' lv-' + s.level : '') + (chosen && chosen.id === s.id ? ' sel' : ''), `${F.time.format(s.start_ts)} · ${s.left === 0 ? t('full') : t('spotsLeft', s.left)}`);
+      b.type = 'button'; b.disabled = s.left === 0;
+      b.onclick = () => { chosen = s; $('sum').textContent = `${centerLabel(s.center)} · ${t(F.key.format(s.start_ts) === today ? 'today' : 'tomorrow')} · ${F.time.format(s.start_ts)}`; $('bform').classList.remove('hidden'); $('out').className = ''; $('out').textContent = ''; renderSlots(); $('name').focus(); };
+      row.append(b);
+    }
+    box.append(row);
+  }
+}
+
+$('bform').onsubmit = async (e) => {
+  e.preventDefault(); if (!chosen) return;
+  const out = $('out'); out.className = ''; out.textContent = '';
+  if (!$('name').value.trim()) { say(out, t('errName')); return; }
+  if ($('phone').value.replace(/\D/g, '').length < 10) { say(out, t('errPhone')); return; }
+  if (!$('place').value.trim()) { say(out, t('errPlace')); return; }
+  $('go').disabled = true;
+  try {
+    await api('/api/reception/book', {method:'POST', body: JSON.stringify({slotId: chosen.id, name: $('name').value, phone: $('phone').value, place: $('place').value, lang: $('lang').value})});
+    say(out, t('rBooked'), true); $('name').value = ''; $('phone').value = ''; $('place').value = ''; await refresh();
+  } catch (err) { say(out, err.message); }
+  $('go').disabled = false;
+};
+
+function renderBookings() {
+  const box = $('bk'); box.replaceChildren();
+  if (!bookings.length) { box.append(mk('p', 'empty', t('rNoBk'))); return; }
+  const today = F.key.format(Date.now());
+  let last = '';
+  for (const b of bookings) {
+    const k = F.key.format(b.start_ts) + b.time;
+    if (k !== last) { box.append(mk('div', 'dayh', `${t(F.key.format(b.start_ts) === today ? 'today' : 'tomorrow')} · ${F.time.format(b.start_ts)}`)); last = k; }
+    const c = mk('div', 'bkcard'); const r = mk('div', 'bk'); r.style.borderTop = '0'; const who = mk('div', 'who');
+    who.append(mk('b', '', b.name));
+    const sm = mk('small'); const a = mk('a', '', '+' + b.phone); a.href = 'https://wa.me/' + b.phone; a.target = '_blank'; a.rel = 'noopener'; sm.append(t('phoneLbl') + ': ', a); who.append(sm);
+    who.append(mk('div', 'reqtxt', '🏠 ' + b.place + '  ·  📍 ' + centerLabel(b.center)));
+    const tags = mk('div'); tags.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-top:6px';
+    if (b.kind === 'extra') tags.append(mk('span', 'kindtag', t('extraTag')));
+    if (b.arrival === 'here') tags.append(mk('span', 'arr here', '✓ ' + t('arrHere')));
+    else if (b.arrival === 'no') tags.append(mk('span', 'arr no', '✕ ' + t('arrNo')));
+    who.append(tags); r.append(who);
+    if (b.source === 'reception') {
+      const x = mk('button', 'btn danger sm'); x.type = 'button'; x.textContent = t('cancel');
+      x.onclick = async () => {
+        if (x.dataset.armed !== '1') { x.dataset.armed = '1'; x.textContent = t('confirmCancel'); setTimeout(() => { x.dataset.armed = ''; x.textContent = t('cancel'); }, 4000); return; }
+        x.disabled = true; try { await api('/api/reception/bookings/' + b.id, {method:'DELETE'}); refresh(); } catch (e) { x.disabled = false; }
+      };
+      r.append(x);
+    }
+    c.append(r); box.append(c);
+  }
+}
+
+window.onLang = () => { mkFmt(); document.title = t('rTitle'); renderSlots(); renderBookings(); if (chosen) $('sum').textContent = `${centerLabel(chosen.center)} · ${F.time.format(chosen.start_ts)}`; };
+document.addEventListener('DOMContentLoaded', () => { document.title = t('rTitle'); });
+if (token) { show(true); refresh().catch(() => show(false)); } else show(false);
+</script>
+</body>
+</html>
